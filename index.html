@@ -7,6 +7,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: Arial, sans-serif; background: #F0F4FB; }
@@ -33,20 +35,59 @@ tr:hover td { background: #E8F0FD !important; }
 .rel-wrap { display:flex; flex-wrap:wrap; align-items:center; min-width:150px; }
 .rel-input { border:1px solid #2E75B6; border-radius:4px; padding:3px 8px; font-size:12px; width:120px; outline:none; }
 .hint-bar { background:#EFF6FF; border-bottom:1px solid #BFDBFE; padding:8px 20px; font-size:12px; color:#1E40AF; display:flex; align-items:flex-start; gap:6px; }
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; display:flex; align-items:center; justify-content:center; padding:16px; }
+.modal { background:white; border-radius:10px; padding:24px; width:100%; max-width:520px; box-shadow:0 8px 32px rgba(0,0,0,0.2); max-height:90vh; overflow-y:auto; }
+.modal h2 { font-size:16px; color:#1F4E79; margin-bottom:18px; display:flex; align-items:center; gap:8px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+.form-group { display:flex; flex-direction:column; gap:4px; margin-bottom:12px; }
+.form-group label { font-size:12px; color:#374151; font-weight:bold; }
+.form-group input, .form-group select { border:1px solid #D1D9E6; border-radius:6px; padding:7px 10px; font-size:13px; outline:none; }
+.form-group input:focus, .form-group select:focus { border-color:#2E75B6; }
+.required { color:#E53E3E; }
+.btn-primary { background:#1F4E79; color:white; border:none; border-radius:6px; padding:9px 20px; font-size:13px; cursor:pointer; font-weight:bold; }
+.btn-primary:hover { background:#2E75B6; }
+.btn-secondary { background:#F3F4F6; color:#374151; border:1px solid #D1D9E6; border-radius:6px; padding:9px 20px; font-size:13px; cursor:pointer; }
+.btn-secondary:hover { background:#E5E7EB; }
+.new-char-btn { display:flex; align-items:center; gap:6px; background:white; color:#1F4E79; border:2px solid white; border-radius:6px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:bold; }
+.new-char-btn:hover { background:#E8F0FD; }
+.error-msg { color:#E53E3E; font-size:11px; margin-top:2px; }
+.sync-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:5px; }
+.sync-on { background:#4ADE80; box-shadow:0 0 6px #4ADE80; }
+.sync-off { background:#FCA5A5; }
+.loading-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; gap:16px; color:#1F4E79; }
+.spinner { width:40px; height:40px; border:4px solid #BFDBFE; border-top-color:#1F4E79; border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
 </style>
 </head>
 <body>
 <div id="root"></div>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDs_0rnJu2t4fyEGQO8yd8VNocX5NEDWK4",
+  authDomain: "game-characters-5eba7.firebaseapp.com",
+  projectId: "game-characters-5eba7",
+  storageBucket: "game-characters-5eba7.firebasestorage.app",
+  messagingSenderId: "602475714580",
+  appId: "1:602475714580:web:d890cf85c98cfabe422f01",
+  measurementId: "G-H3JRTQJH8F"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+</script>
 <script type="text/babel">
-const { useState, useMemo, useRef, useEffect } = React;
+const { useState, useMemo, useRef, useEffect, useCallback } = React;
 
 const RACE_COLORS = {
   '人類':'#EBF5FB','精靈':'#EAFAF1','龍人':'#FEF5E7','矮人':'#F2F3F4',
   '鳥人':'#E8F6FD','亞人':'#F3E8FF','魔女':'#FDE8F4','魔物':'#FFF8E1',
   '方舟':'#EAF0FB','魔鬼':'#FDEDEC','神':'#FEFCE8'
 };
+const RACES = ['人類','精靈','龍人','矮人','鳥人','亞人','魔女','魔物','方舟','魔鬼','神','其他'];
+const FACTIONS = ['教會','中立','亞人','無','其他'];
+const JOBS = ['騎士','城堡','國王','主教','皇后','無','其他'];
+const PERSONALITIES = ['古板者','調停者','膽小者','享樂者','激進者','無',''];
 
-const R0 = [
+const SEED_REC = [
   {name:'賽爾維斯・庫斯托',race:'人類',personality:'古板者',faction:'教會',age:'29',job:'騎士',textLink:'聖都招募角色名錄.docx',relations:['莉賽爾・庫斯托','阿爾諾・維赫']},
   {name:'莉賽爾・庫斯托',race:'人類',personality:'調停者',faction:'教會',age:'19',job:'城堡',textLink:'聖都招募角色名錄.docx',relations:['賽爾維斯・庫斯托','阿爾諾・維赫']},
   {name:'阿爾諾・維赫',race:'人類',personality:'膽小者',faction:'教會',age:'26',job:'國王',textLink:'嚮導-阿爾諾',relations:['莉賽爾・庫斯托']},
@@ -65,8 +106,7 @@ const R0 = [
   {name:'帕茲',race:'亞人',personality:'膽小者',faction:'中立',age:'1560',job:'主教',textLink:'納恩/莉莉/帕茲',relations:['納恩','莉莉']},
   {name:'古斯',race:'精靈',personality:'膽小者',faction:'教會',age:'',job:'主教',textLink:'古娜與古斯',relations:[]},
 ];
-
-const NR0 = [
+const SEED_NR = [
   {name:'巴薩克',race:'人類',personality:'激進者',faction:'中立',age:'514',job:'皇后',textLink:'',relations:[]},
   {name:'涅克斯',race:'亞人',personality:'激進者',faction:'教會',age:'4950',job:'皇后',textLink:'',relations:['白羽','極寒','艾比','安瓦']},
   {name:'極寒',race:'方舟',personality:'調停者',faction:'教會',age:'無',job:'皇后',textLink:'',relations:[]},
@@ -94,40 +134,153 @@ const NR0 = [
   {name:'娜圖拉',race:'精靈',personality:'無',faction:'教會',age:'',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:[]},
 ];
 
+// ── Firestore helpers ──────────────────────────────────────────
+async function seedIfEmpty() {
+  const snap = await db.collection('characters').limit(1).get();
+  if (!snap.empty) return;
+  const batch = db.batch();
+  [...SEED_REC.map(c=>({...c,source:'recruitable'})),
+   ...SEED_NR.map(c=>({...c,source:'non-recruitable'}))]
+    .forEach(c => {
+      const ref = db.collection('characters').doc(c.name);
+      batch.set(ref, c);
+    });
+  await batch.commit();
+}
+
+async function fsAddChar(char) {
+  await db.collection('characters').doc(char.name).set(char);
+}
+
+async function fsUpdateRelations(nameA, nameB, action) {
+  // action: 'add' | 'remove'
+  const snapA = await db.collection('characters').doc(nameA).get();
+  const snapB = await db.collection('characters').doc(nameB).get();
+  if (!snapA.exists || !snapB.exists) return;
+  const dataA = snapA.data();
+  const dataB = snapB.data();
+  let relA = dataA.relations || [];
+  let relB = dataB.relations || [];
+  if (action === 'add') {
+    if (!relA.includes(nameB)) relA = [...relA, nameB];
+    if (!relB.includes(nameA)) relB = [...relB, nameA];
+  } else {
+    relA = relA.filter(r => r !== nameB);
+    relB = relB.filter(r => r !== nameA);
+  }
+  const batch = db.batch();
+  batch.update(db.collection('characters').doc(nameA), { relations: relA });
+  batch.update(db.collection('characters').doc(nameB), { relations: relB });
+  await batch.commit();
+}
+
+// ── Modal ──────────────────────────────────────────────────────
+function AddCharModal({ allChars, onClose }) {
+  const [form, setForm] = useState({ name:'', race:'人類', personality:'', faction:'教會', age:'', job:'騎士', textLink:'', source:'recruitable' });
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+
+  const handleSubmit = async () => {
+    if (!form.name.trim()) { setError('請輸入角色名稱'); return; }
+    if (allChars.some(c=>c.name===form.name.trim())) { setError('此角色名稱已存在'); return; }
+    setSaving(true);
+    await fsAddChar({ ...form, name: form.name.trim(), relations: [] });
+    setSaving(false);
+    onClose();
+  };
+
+  return (
+    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <h2>✨ 新增角色</h2>
+        <div className="form-group">
+          <label>角色名稱 <span className="required">*</span></label>
+          <input value={form.name} onChange={e=>{set('name',e.target.value);setError('');}} placeholder="輸入角色名稱" />
+          {error && <div className="error-msg">{error}</div>}
+        </div>
+        <div className="form-group">
+          <label>招募狀態 <span className="required">*</span></label>
+          <select value={form.source} onChange={e=>set('source',e.target.value)}>
+            <option value="recruitable">可招募</option>
+            <option value="non-recruitable">不可招募</option>
+          </select>
+        </div>
+        <div className="form-row">
+          <div className="form-group" style={{marginBottom:0}}>
+            <label>種族</label>
+            <select value={form.race} onChange={e=>set('race',e.target.value)}>
+              {RACES.map(r=><option key={r}>{r}</option>)}
+            </select>
+          </div>
+          <div className="form-group" style={{marginBottom:0}}>
+            <label>派系</label>
+            <select value={form.faction} onChange={e=>set('faction',e.target.value)}>
+              {FACTIONS.map(f=><option key={f}>{f}</option>)}
+            </select>
+          </div>
+        </div>
+        <div style={{marginBottom:'12px'}}/>
+        <div className="form-row">
+          <div className="form-group" style={{marginBottom:0}}>
+            <label>個性（相適性）</label>
+            <select value={form.personality} onChange={e=>set('personality',e.target.value)}>
+              {PERSONALITIES.map(p=><option key={p} value={p}>{p||'（未填）'}</option>)}
+            </select>
+          </div>
+          <div className="form-group" style={{marginBottom:0}}>
+            <label>年齡</label>
+            <input value={form.age} onChange={e=>set('age',e.target.value)} placeholder="例：25 或 無" />
+          </div>
+        </div>
+        <div style={{marginBottom:'12px'}}/>
+        <div className="form-row">
+          <div className="form-group" style={{marginBottom:0}}>
+            <label>職業（棋種）</label>
+            <select value={form.job} onChange={e=>set('job',e.target.value)}>
+              {JOBS.map(j=><option key={j}>{j}</option>)}
+            </select>
+          </div>
+          <div className="form-group" style={{marginBottom:0}}>
+            <label>角色設定文本連結</label>
+            <input value={form.textLink} onChange={e=>set('textLink',e.target.value)} placeholder="文件名稱" />
+          </div>
+        </div>
+        <div style={{marginTop:'20px',display:'flex',gap:'10px',justifyContent:'flex-end'}}>
+          <button className="btn-secondary" onClick={onClose} disabled={saving}>取消</button>
+          <button className="btn-primary" onClick={handleSubmit} disabled={saving}>
+            {saving ? '儲存中…' : '✅ 新增角色'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main App ───────────────────────────────────────────────────
 function App() {
-  const [rec, setRec] = useState(R0);
-  const [nrec, setNrec] = useState(NR0);
+  const [characters, setCharacters] = useState(null); // null = loading
+  const [connected, setConnected] = useState(false);
   const [tab, setTab] = useState(0);
   const [addingRel, setAddingRel] = useState(null);
   const [relSearch, setRelSearch] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
   const inputRef = useRef(null);
   const wrapRef = useRef(null);
 
-  const allChars = useMemo(() => [
-    ...rec.map(c => ({...c, source:'可招募'})),
-    ...nrec.map(c => ({...c, source:'不可招募'}))
-  ], [rec, nrec]);
-
-  const syncUpdate = (fn, nameA, nameB) => {
-    setRec(prev => fn(fn(prev, nameA, nameB), nameB, nameA));
-    setNrec(prev => fn(fn(prev, nameA, nameB), nameB, nameA));
-  };
-
-  const addRelation = (charName, relName) => {
-    if (!charName || !relName || charName === relName) return;
-    const addFn = (list, target, rel) =>
-      list.map(c => c.name === target && !c.relations.includes(rel)
-        ? {...c, relations:[...c.relations, rel]} : c);
-    syncUpdate(addFn, charName, relName);
-    setAddingRel(null); setRelSearch('');
-  };
-
-  const removeRelation = (charName, relName) => {
-    const remFn = (list, target, rel) =>
-      list.map(c => c.name === target
-        ? {...c, relations:c.relations.filter(r => r !== rel)} : c);
-    syncUpdate(remFn, charName, relName);
-  };
+  // Real-time listener
+  useEffect(() => {
+    seedIfEmpty().catch(console.error);
+    const unsub = db.collection('characters').onSnapshot(
+      snap => {
+        const docs = snap.docs.map(d => d.data());
+        setCharacters(docs);
+        setConnected(true);
+      },
+      err => { console.error(err); setConnected(false); }
+    );
+    return unsub;
+  }, []);
 
   useEffect(() => {
     if (addingRel && inputRef.current) inputRef.current.focus();
@@ -143,58 +296,75 @@ function App() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  const rec  = useMemo(() => (characters||[]).filter(c=>c.source==='recruitable'), [characters]);
+  const nrec = useMemo(() => (characters||[]).filter(c=>c.source==='non-recruitable'), [characters]);
+  const allChars = useMemo(() => [
+    ...rec.map(c=>({...c,label:'可招募'})),
+    ...nrec.map(c=>({...c,label:'不可招募'}))
+  ], [rec, nrec]);
+
   const suggestions = useMemo(() => {
     if (!addingRel) return [];
-    const cur = allChars.find(c => c.name === addingRel);
+    const cur = allChars.find(c=>c.name===addingRel);
     return allChars
-      .filter(c => c.name !== addingRel && !cur?.relations.includes(c.name))
-      .filter(c => !relSearch || c.name.includes(relSearch))
-      .slice(0, 12);
+      .filter(c=>c.name!==addingRel && !cur?.relations?.includes(c.name))
+      .filter(c=>!relSearch||c.name.includes(relSearch))
+      .slice(0,12);
   }, [addingRel, relSearch, allChars]);
 
   const charIndexGroups = useMemo(() => {
-    const sorted = [...allChars].sort((a, b) => {
-      if (a.race !== b.race) return a.race.localeCompare(b.race, 'zh');
-      if (a.faction !== b.faction) return a.faction.localeCompare(b.faction, 'zh');
-      return a.name.localeCompare(b.name, 'zh');
+    const sorted = [...allChars].sort((a,b)=>{
+      if (a.race!==b.race) return a.race.localeCompare(b.race,'zh');
+      if (a.faction!==b.faction) return a.faction.localeCompare(b.faction,'zh');
+      return a.name.localeCompare(b.name,'zh');
     });
-    const groups = {};
-    sorted.forEach(c => { if (!groups[c.race]) groups[c.race]=[]; groups[c.race].push(c); });
-    return groups;
+    const g = {};
+    sorted.forEach(c=>{ if(!g[c.race]) g[c.race]=[]; g[c.race].push(c); });
+    return g;
   }, [allChars]);
+
+  const handleAddRel = async (charName, relName) => {
+    if (!charName||!relName||charName===relName) return;
+    setAddingRel(null); setRelSearch('');
+    await fsUpdateRelations(charName, relName, 'add');
+  };
+
+  const handleRemoveRel = async (charName, relName) => {
+    await fsUpdateRelations(charName, relName, 'remove');
+  };
 
   function RelTags({char}) {
     return (
       <div className="rel-wrap" ref={addingRel===char.name ? wrapRef : null}>
-        {char.relations.map(rel => (
+        {(char.relations||[]).map(rel=>(
           <span key={rel} className="tag">
             {rel}
-            <button className="tag-del" onClick={() => removeRelation(char.name, rel)}>×</button>
+            <button className="tag-del" onClick={()=>handleRemoveRel(char.name,rel)}>×</button>
           </span>
         ))}
-        {addingRel === char.name ? (
+        {addingRel===char.name ? (
           <div style={{position:'relative'}}>
             <input ref={inputRef} className="rel-input" value={relSearch}
-              onChange={e => setRelSearch(e.target.value)}
-              onKeyDown={e => {
-                if (e.key==='Escape') { setAddingRel(null); setRelSearch(''); }
-                if (e.key==='Enter' && suggestions.length>0) addRelation(char.name, suggestions[0].name);
+              onChange={e=>setRelSearch(e.target.value)}
+              onKeyDown={e=>{
+                if(e.key==='Escape'){setAddingRel(null);setRelSearch('');}
+                if(e.key==='Enter'&&suggestions.length>0) handleAddRel(char.name,suggestions[0].name);
               }}
               placeholder="搜尋角色名稱…" />
-            {suggestions.length > 0 && (
+            {suggestions.length>0&&(
               <div className="dropdown">
-                {suggestions.map(s => (
+                {suggestions.map(s=>(
                   <div key={s.name} className="dd-item"
-                    onMouseDown={e => { e.preventDefault(); addRelation(char.name, s.name); }}>
+                    onMouseDown={e=>{e.preventDefault();handleAddRel(char.name,s.name);}}>
                     <span>{s.name}</span>
-                    <span className={s.source==='可招募'?'badge-r':'badge-nr'}>{s.source}</span>
+                    <span className={s.label==='可招募'?'badge-r':'badge-nr'}>{s.label}</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
-        ) : (
-          <button className="add-btn" onClick={() => { setAddingRel(char.name); setRelSearch(''); }}>＋</button>
+        ):(
+          <button className="add-btn" onClick={()=>{setAddingRel(char.name);setRelSearch('');}}>＋</button>
         )}
       </div>
     );
@@ -205,12 +375,10 @@ function App() {
       <div className="scroll-x">
         <table>
           <thead>
-            <tr>
-              {['名字','種族','個性（相適性）','派系','年齡','職業（棋種）','角色設定文本連結','關聯角色'].map(h=><th key={h}>{h}</th>)}
-            </tr>
+            <tr>{['名字','種族','個性（相適性）','派系','年齡','職業（棋種）','角色設定文本連結','關聯角色'].map(h=><th key={h}>{h}</th>)}</tr>
           </thead>
           <tbody>
-            {chars.map(char => (
+            {chars.map(char=>(
               <tr key={char.name}>
                 <td style={{fontWeight:'600',whiteSpace:'nowrap'}}>{char.name}</td>
                 <td style={{textAlign:'center'}}>
@@ -235,24 +403,21 @@ function App() {
       <div className="scroll-x">
         <table>
           <thead>
-            <tr>
-              <th>名字</th><th>來源</th>
-              {[1,2,3,4,5,6].map(n=><th key={n}>關聯角色{n}</th>)}
-            </tr>
+            <tr><th>名字</th><th>來源</th>{[1,2,3,4,5,6].map(n=><th key={n}>關聯角色{n}</th>)}</tr>
           </thead>
           <tbody>
-            {allChars.map((char,i) => (
+            {allChars.map(char=>(
               <tr key={char.name}>
                 <td style={{fontWeight:'600',whiteSpace:'nowrap'}}>{char.name}</td>
                 <td style={{textAlign:'center'}}>
-                  <span className={char.source==='可招募'?'badge-r':'badge-nr'}
+                  <span className={char.label==='可招募'?'badge-r':'badge-nr'}
                     style={{padding:'2px 8px',borderRadius:'12px',fontWeight:'bold',fontSize:'11px'}}>
-                    {char.source}
+                    {char.label}
                   </span>
                 </td>
-                {[0,1,2,3,4,5].map(idx => (
-                  <td key={idx} style={{textAlign:'center',color:char.relations[idx]?'#1F4E79':'#BFBFBF',fontSize:'12px'}}>
-                    {char.relations[idx]||'—'}
+                {[0,1,2,3,4,5].map(idx=>(
+                  <td key={idx} style={{textAlign:'center',color:(char.relations||[])[idx]?'#1F4E79':'#BFBFBF',fontSize:'12px'}}>
+                    {(char.relations||[])[idx]||'—'}
                   </td>
                 ))}
               </tr>
@@ -266,7 +431,7 @@ function App() {
   function CharIndex() {
     return (
       <div>
-        {Object.entries(charIndexGroups).map(([race, chars]) => (
+        {Object.entries(charIndexGroups).map(([race,chars])=>(
           <div key={race} style={{marginBottom:'16px',borderRadius:'6px',overflow:'hidden',border:'1px solid #D1D9E6'}}>
             <div className="group-hdr" style={{background:RACE_COLORS[race]||'#F5F5F5'}}>
               ▌ {race}
@@ -274,22 +439,18 @@ function App() {
             </div>
             <div className="scroll-x">
               <table style={{minWidth:'500px'}}>
-                <thead>
-                  <tr style={{background:'#2E75B6'}}>
-                    {['名字','派系','年齡','職業（棋種）','招募狀態'].map(h=><th key={h}>{h}</th>)}
-                  </tr>
-                </thead>
+                <thead><tr style={{background:'#2E75B6'}}>{['名字','派系','年齡','職業（棋種）','招募狀態'].map(h=><th key={h}>{h}</th>)}</tr></thead>
                 <tbody>
-                  {chars.map((char,i) => (
+                  {chars.map(char=>(
                     <tr key={char.name}>
                       <td style={{fontWeight:'600'}}>{char.name}</td>
                       <td style={{textAlign:'center',fontSize:'12px'}}>{char.faction}</td>
                       <td style={{textAlign:'center',fontSize:'12px'}}>{char.age}</td>
                       <td style={{textAlign:'center',fontSize:'12px'}}>{char.job}</td>
                       <td style={{textAlign:'center'}}>
-                        <span className={char.source==='可招募'?'badge-r':'badge-nr'}
+                        <span className={char.label==='可招募'?'badge-r':'badge-nr'}
                           style={{padding:'2px 8px',borderRadius:'12px',fontWeight:'bold',fontSize:'11px'}}>
-                          {char.source}
+                          {char.label}
                         </span>
                       </td>
                     </tr>
@@ -303,25 +464,38 @@ function App() {
     );
   }
 
+  if (characters === null) {
+    return (
+      <div className="loading-screen">
+        <div className="spinner"/>
+        <div style={{fontSize:'15px',fontWeight:'bold'}}>連接雲端資料庫中…</div>
+        <div style={{fontSize:'12px',color:'#6B7280'}}>首次載入需要幾秒鐘</div>
+      </div>
+    );
+  }
+
   const TABS = ['可招募角色','不可招募角色','關聯角色索引','角色索引清單'];
   const COUNTS = [rec.length, nrec.length, allChars.length, allChars.length];
 
   return (
     <div style={{minHeight:'100vh',background:'#F0F4FB'}}>
-      <div style={{background:'linear-gradient(135deg,#1F4E79,#2E75B6)',color:'white',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+      {showAddModal && <AddCharModal allChars={allChars} onClose={()=>setShowAddModal(false)}/>}
+
+      <div style={{background:'linear-gradient(135deg,#1F4E79,#2E75B6)',color:'white',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'10px'}}>
         <div>
           <div style={{fontSize:'18px',fontWeight:'bold'}}>🎮 遊戲角色管理系統</div>
-          <div style={{fontSize:'12px',opacity:0.75,marginTop:'3px'}}>共 {allChars.length} 位角色・關聯資料雙向即時同步</div>
+          <div style={{fontSize:'12px',opacity:0.8,marginTop:'3px',display:'flex',alignItems:'center',gap:'6px'}}>
+            <span className={`sync-dot ${connected?'sync-on':'sync-off'}`}/>
+            {connected ? '已連接雲端・所有裝置即時同步' : '連線中斷，請重新整理'}
+            <span style={{opacity:0.6}}>· 共 {allChars.length} 位角色</span>
+          </div>
         </div>
-        <div style={{fontSize:'12px',opacity:0.75,textAlign:'right',lineHeight:'1.6'}}>
-          <div>可招募：{rec.length} 人</div>
-          <div>不可招募：{nrec.length} 人</div>
-        </div>
+        <button className="new-char-btn" onClick={()=>setShowAddModal(true)}>＋ 新增角色</button>
       </div>
 
       <div style={{background:'white',borderBottom:'2px solid #E5E7EB',display:'flex',overflowX:'auto'}}>
-        {TABS.map((label, i) => (
-          <button key={i} className={`tab-btn ${tab===i?'active':''}`} onClick={() => setTab(i)}>
+        {TABS.map((label,i)=>(
+          <button key={i} className={`tab-btn ${tab===i?'active':''}`} onClick={()=>setTab(i)}>
             {label}
             <span style={{marginLeft:'5px',fontSize:'11px',background:tab===i?'#1F4E79':'#E5E7EB',color:tab===i?'white':'#6B7280',borderRadius:'10px',padding:'1px 7px'}}>
               {COUNTS[i]}
@@ -330,18 +504,18 @@ function App() {
         ))}
       </div>
 
-      {(tab===0||tab===1) && (
+      {(tab===0||tab===1)&&(
         <div className="hint-bar">
           <span>💡</span>
-          <span>點擊關聯角色欄的 <strong>＋</strong> 可新增關聯（支援搜尋）；點擊 <strong>×</strong> 可刪除。操作後對方角色的關聯欄會<strong>自動雙向同步</strong>，「關聯角色索引」與「角色索引清單」即時更新。</span>
+          <span>點 <strong>＋</strong> 新增關聯（可招募 ＆ 不可招募都能選），點 <strong>×</strong> 刪除。操作後<strong>雙向自動同步</strong>並即時寫入雲端，任何裝置重新整理都是最新資料。</span>
         </div>
       )}
 
       <div style={{padding:'16px'}}>
-        {tab===0 && <DataTable chars={rec}/>}
-        {tab===1 && <DataTable chars={nrec}/>}
-        {tab===2 && <RelationIndex/>}
-        {tab===3 && <CharIndex/>}
+        {tab===0&&<DataTable chars={rec}/>}
+        {tab===1&&<DataTable chars={nrec}/>}
+        {tab===2&&<RelationIndex/>}
+        {tab===3&&<CharIndex/>}
       </div>
     </div>
   );
