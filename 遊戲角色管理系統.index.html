@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>遊戲角色管理系統</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #F0F4FB; }
+.scroll-x { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 700px; }
+th, td { border: 1px solid #D1D9E6; padding: 7px 10px; font-size: 13px; }
+th { background: #1F4E79; color: white; text-align: center; white-space: nowrap; font-size: 12px; }
+tr:nth-child(even) td { background: #F2F7FF; }
+tr:nth-child(odd) td { background: #FFFFFF; }
+tr:hover td { background: #E8F0FD !important; }
+.tag { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:20px; font-size:11px; background:#E0ECFF; border:1px solid #6BA3D6; color:#1F4E79; margin:2px; }
+.tag-del { background:none; border:none; color:#C0392B; cursor:pointer; font-size:14px; line-height:1; padding:0 2px; font-weight:bold; }
+.tag-del:hover { color:#E74C3C; }
+.add-btn { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:11px; background:#E2EFDA; border:1px solid #70AD47; color:#375623; cursor:pointer; margin:2px; font-weight:bold; }
+.add-btn:hover { background:#D5E8CC; }
+.tab-btn { padding:10px 16px; border:none; background:none; cursor:pointer; font-size:13px; border-bottom:3px solid transparent; color:#6B7280; white-space:nowrap; }
+.tab-btn.active { color:#1F4E79; border-bottom-color:#1F4E79; font-weight:bold; }
+.dropdown { position:absolute; z-index:9999; background:white; border:1px solid #C0C8D8; border-radius:6px; box-shadow:0 4px 16px rgba(0,0,0,0.15); min-width:170px; max-height:200px; overflow-y:auto; top:100%; left:0; margin-top:2px; }
+.dd-item { padding:7px 12px; cursor:pointer; font-size:12px; display:flex; justify-content:space-between; gap:8px; }
+.dd-item:hover { background:#E8F0FD; }
+.badge-r { font-size:10px; padding:1px 6px; border-radius:10px; background:#E2EFDA; color:#375623; }
+.badge-nr { font-size:10px; padding:1px 6px; border-radius:10px; background:#FCE4D6; color:#833C00; }
+.group-hdr { padding:8px 14px; font-weight:bold; font-size:12px; color:#1F4E79; border-left:4px solid #2E75B6; display:flex; align-items:center; gap:8px; }
+.rel-wrap { display:flex; flex-wrap:wrap; align-items:center; min-width:150px; }
+.rel-input { border:1px solid #2E75B6; border-radius:4px; padding:3px 8px; font-size:12px; width:120px; outline:none; }
+.hint-bar { background:#EFF6FF; border-bottom:1px solid #BFDBFE; padding:8px 20px; font-size:12px; color:#1E40AF; display:flex; align-items:flex-start; gap:6px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo, useRef, useEffect } = React;
+
+const RACE_COLORS = {
+  '人類':'#EBF5FB','精靈':'#EAFAF1','龍人':'#FEF5E7','矮人':'#F2F3F4',
+  '鳥人':'#E8F6FD','亞人':'#F3E8FF','魔女':'#FDE8F4','魔物':'#FFF8E1',
+  '方舟':'#EAF0FB','魔鬼':'#FDEDEC','神':'#FEFCE8'
+};
+
+const R0 = [
+  {name:'賽爾維斯・庫斯托',race:'人類',personality:'古板者',faction:'教會',age:'29',job:'騎士',textLink:'聖都招募角色名錄.docx',relations:['莉賽爾・庫斯托','阿爾諾・維赫']},
+  {name:'莉賽爾・庫斯托',race:'人類',personality:'調停者',faction:'教會',age:'19',job:'城堡',textLink:'聖都招募角色名錄.docx',relations:['賽爾維斯・庫斯托','阿爾諾・維赫']},
+  {name:'阿爾諾・維赫',race:'人類',personality:'膽小者',faction:'教會',age:'26',job:'國王',textLink:'嚮導-阿爾諾',relations:['莉賽爾・庫斯托']},
+  {name:'艾拉',race:'人類',personality:'膽小者',faction:'教會',age:'20',job:'主教',textLink:'聖都招募角色名錄.docx',relations:[]},
+  {name:'伊斯卡',race:'精靈',personality:'享樂者',faction:'教會',age:'16',job:'主教',textLink:'聖都招募角色名錄.docx',relations:[]},
+  {name:'格魯・岩脊',race:'龍人',personality:'激進者',faction:'教會',age:'105',job:'城堡',textLink:'聖都招募角色名錄.docx',relations:[]},
+  {name:'赫莫里斯',race:'鳥人',personality:'古板者',faction:'教會',age:'45',job:'騎士',textLink:'聖都招募角色名錄.docx',relations:[]},
+  {name:'芬妮瑟',race:'魔女',personality:'享樂者',faction:'中立',age:'432',job:'主教',textLink:'聖地可招募角色.docx',relations:[]},
+  {name:'特隆克',race:'龍人',personality:'激進者',faction:'教會',age:'80',job:'城堡',textLink:'聖地可招募角色.docx',relations:[]},
+  {name:'凱洛希亞',race:'人類',personality:'激進者',faction:'教會',age:'17',job:'騎士',textLink:'聖地可招募角色.docx',relations:[]},
+  {name:'布拉斯特',race:'矮人',personality:'膽小者',faction:'中立',age:'52',job:'主教',textLink:'聖地可招募角色.docx',relations:[]},
+  {name:'科里法',race:'鳥人',personality:'古板者',faction:'教會',age:'34',job:'騎士',textLink:'聖地可招募角色.docx',relations:[]},
+  {name:'飽伯',race:'魔物',personality:'調停者',faction:'亞人',age:'4',job:'皇后',textLink:'飽柏_人物誌',relations:[]},
+  {name:'納恩',race:'精靈',personality:'調停者',faction:'中立',age:'42',job:'騎士',textLink:'納恩/莉莉/帕茲',relations:['莉莉','帕茲']},
+  {name:'莉莉',race:'精靈',personality:'享樂者',faction:'中立',age:'18',job:'城堡',textLink:'納恩/莉莉/帕茲',relations:['納恩','帕茲']},
+  {name:'帕茲',race:'亞人',personality:'膽小者',faction:'中立',age:'1560',job:'主教',textLink:'納恩/莉莉/帕茲',relations:['納恩','莉莉']},
+  {name:'古斯',race:'精靈',personality:'膽小者',faction:'教會',age:'',job:'主教',textLink:'古娜與古斯',relations:[]},
+];
+
+const NR0 = [
+  {name:'巴薩克',race:'人類',personality:'激進者',faction:'中立',age:'514',job:'皇后',textLink:'',relations:[]},
+  {name:'涅克斯',race:'亞人',personality:'激進者',faction:'教會',age:'4950',job:'皇后',textLink:'',relations:['白羽','極寒','艾比','安瓦']},
+  {name:'極寒',race:'方舟',personality:'調停者',faction:'教會',age:'無',job:'皇后',textLink:'',relations:[]},
+  {name:'阿涅澤',race:'人類',personality:'古板者',faction:'中立',age:'80',job:'皇后',textLink:'',relations:[]},
+  {name:'維爾',race:'人類',personality:'調停者',faction:'中立',age:'132',job:'皇后',textLink:'',relations:[]},
+  {name:'娜塔夏',race:'人類',personality:'膽小者',faction:'中立',age:'1544',job:'皇后',textLink:'',relations:[]},
+  {name:'伯納德',race:'人類',personality:'激進者',faction:'中立',age:'74',job:'騎士',textLink:'',relations:[]},
+  {name:'白羽',race:'神',personality:'無',faction:'無',age:'無',job:'無',textLink:'',relations:['艾蕾莎・格林伍德','代行官E','涅克斯','極寒']},
+  {name:'代行官E',race:'人類',personality:'調停者',faction:'教會',age:'31',job:'皇后',textLink:'',relations:['白羽','艾蕾莎・格林伍德']},
+  {name:'艾蕾莎・格林伍德',race:'人類',personality:'無',faction:'教會',age:'26',job:'無',textLink:'',relations:['白羽','代行官E']},
+  {name:'阿帕蒂',race:'亞人',personality:'激進者',faction:'中立',age:'165/6080',job:'國王',textLink:'',relations:[]},
+  {name:'佛雷德',race:'龍人',personality:'膽小者',faction:'中立',age:'19',job:'國王',textLink:'',relations:[]},
+  {name:'愛蕾諾雅・庫斯托',race:'人類',personality:'古板者',faction:'教會',age:'27',job:'無',textLink:'聖都騎士-艾蕾諾雅',relations:['代行官E']},
+  {name:'德利達',race:'魔鬼',personality:'無',faction:'亞人',age:'7522',job:'無',textLink:'焦慮的魔鬼（德利達）',relations:[]},
+  {name:'空間',race:'方舟',personality:'無',faction:'無',age:'無',job:'無',textLink:'(方舟)空間 的副本',relations:['白羽']},
+  {name:'古娜',race:'精靈',personality:'',faction:'教會',age:'',job:'',textLink:'古娜與古斯',relations:[]},
+  {name:'教皇',race:'鳥人',personality:'無',faction:'教會',age:'5200',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:[]},
+  {name:'艾比',race:'人類',personality:'無',faction:'教會',age:'5124',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:['涅克斯']},
+  {name:'安瓦',race:'龍人',personality:'無',faction:'教會',age:'5211',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:['涅克斯']},
+  {name:'庫拉多尼',race:'精靈',personality:'無',faction:'教會',age:'3512',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:[]},
+  {name:'夢魘',race:'精靈',personality:'無',faction:'教會',age:'5032',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:[]},
+  {name:'醫生',race:'人類',personality:'無',faction:'教會',age:'5011',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:[]},
+  {name:'戰爭',race:'人類',personality:'無',faction:'教會',age:'5026',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:['操偶師','涅克斯','安瓦']},
+  {name:'操偶師',race:'人類',personality:'無',faction:'教會',age:'5026',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:['戰爭']},
+  {name:'娜圖拉',race:'精靈',personality:'無',faction:'教會',age:'',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:[]},
+];
+
+function App() {
+  const [rec, setRec] = useState(R0);
+  const [nrec, setNrec] = useState(NR0);
+  const [tab, setTab] = useState(0);
+  const [addingRel, setAddingRel] = useState(null);
+  const [relSearch, setRelSearch] = useState('');
+  const inputRef = useRef(null);
+  const wrapRef = useRef(null);
+
+  const allChars = useMemo(() => [
+    ...rec.map(c => ({...c, source:'可招募'})),
+    ...nrec.map(c => ({...c, source:'不可招募'}))
+  ], [rec, nrec]);
+
+  const syncUpdate = (fn, nameA, nameB) => {
+    setRec(prev => fn(fn(prev, nameA, nameB), nameB, nameA));
+    setNrec(prev => fn(fn(prev, nameA, nameB), nameB, nameA));
+  };
+
+  const addRelation = (charName, relName) => {
+    if (!charName || !relName || charName === relName) return;
+    const addFn = (list, target, rel) =>
+      list.map(c => c.name === target && !c.relations.includes(rel)
+        ? {...c, relations:[...c.relations, rel]} : c);
+    syncUpdate(addFn, charName, relName);
+    setAddingRel(null); setRelSearch('');
+  };
+
+  const removeRelation = (charName, relName) => {
+    const remFn = (list, target, rel) =>
+      list.map(c => c.name === target
+        ? {...c, relations:c.relations.filter(r => r !== rel)} : c);
+    syncUpdate(remFn, charName, relName);
+  };
+
+  useEffect(() => {
+    if (addingRel && inputRef.current) inputRef.current.focus();
+  }, [addingRel]);
+
+  useEffect(() => {
+    const handler = e => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+        setAddingRel(null); setRelSearch('');
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const suggestions = useMemo(() => {
+    if (!addingRel) return [];
+    const cur = allChars.find(c => c.name === addingRel);
+    return allChars
+      .filter(c => c.name !== addingRel && !cur?.relations.includes(c.name))
+      .filter(c => !relSearch || c.name.includes(relSearch))
+      .slice(0, 12);
+  }, [addingRel, relSearch, allChars]);
+
+  const charIndexGroups = useMemo(() => {
+    const sorted = [...allChars].sort((a, b) => {
+      if (a.race !== b.race) return a.race.localeCompare(b.race, 'zh');
+      if (a.faction !== b.faction) return a.faction.localeCompare(b.faction, 'zh');
+      return a.name.localeCompare(b.name, 'zh');
+    });
+    const groups = {};
+    sorted.forEach(c => { if (!groups[c.race]) groups[c.race]=[]; groups[c.race].push(c); });
+    return groups;
+  }, [allChars]);
+
+  function RelTags({char}) {
+    return (
+      <div className="rel-wrap" ref={addingRel===char.name ? wrapRef : null}>
+        {char.relations.map(rel => (
+          <span key={rel} className="tag">
+            {rel}
+            <button className="tag-del" onClick={() => removeRelation(char.name, rel)}>×</button>
+          </span>
+        ))}
+        {addingRel === char.name ? (
+          <div style={{position:'relative'}}>
+            <input ref={inputRef} className="rel-input" value={relSearch}
+              onChange={e => setRelSearch(e.target.value)}
+              onKeyDown={e => {
+                if (e.key==='Escape') { setAddingRel(null); setRelSearch(''); }
+                if (e.key==='Enter' && suggestions.length>0) addRelation(char.name, suggestions[0].name);
+              }}
+              placeholder="搜尋角色名稱…" />
+            {suggestions.length > 0 && (
+              <div className="dropdown">
+                {suggestions.map(s => (
+                  <div key={s.name} className="dd-item"
+                    onMouseDown={e => { e.preventDefault(); addRelation(char.name, s.name); }}>
+                    <span>{s.name}</span>
+                    <span className={s.source==='可招募'?'badge-r':'badge-nr'}>{s.source}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <button className="add-btn" onClick={() => { setAddingRel(char.name); setRelSearch(''); }}>＋</button>
+        )}
+      </div>
+    );
+  }
+
+  function DataTable({chars}) {
+    return (
+      <div className="scroll-x">
+        <table>
+          <thead>
+            <tr>
+              {['名字','種族','個性（相適性）','派系','年齡','職業（棋種）','角色設定文本連結','關聯角色'].map(h=><th key={h}>{h}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {chars.map(char => (
+              <tr key={char.name}>
+                <td style={{fontWeight:'600',whiteSpace:'nowrap'}}>{char.name}</td>
+                <td style={{textAlign:'center'}}>
+                  <span style={{background:RACE_COLORS[char.race]||'#F5F5F5',padding:'2px 8px',borderRadius:'10px',fontSize:'11px'}}>{char.race}</span>
+                </td>
+                <td style={{textAlign:'center',fontSize:'12px'}}>{char.personality}</td>
+                <td style={{textAlign:'center',fontSize:'12px'}}>{char.faction}</td>
+                <td style={{textAlign:'center',fontSize:'12px'}}>{char.age}</td>
+                <td style={{textAlign:'center',fontSize:'12px'}}>{char.job}</td>
+                <td style={{fontSize:'11px',color:'#2563EB',maxWidth:'130px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={char.textLink}>{char.textLink}</td>
+                <td><RelTags char={char}/></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  function RelationIndex() {
+    return (
+      <div className="scroll-x">
+        <table>
+          <thead>
+            <tr>
+              <th>名字</th><th>來源</th>
+              {[1,2,3,4,5,6].map(n=><th key={n}>關聯角色{n}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {allChars.map((char,i) => (
+              <tr key={char.name}>
+                <td style={{fontWeight:'600',whiteSpace:'nowrap'}}>{char.name}</td>
+                <td style={{textAlign:'center'}}>
+                  <span className={char.source==='可招募'?'badge-r':'badge-nr'}
+                    style={{padding:'2px 8px',borderRadius:'12px',fontWeight:'bold',fontSize:'11px'}}>
+                    {char.source}
+                  </span>
+                </td>
+                {[0,1,2,3,4,5].map(idx => (
+                  <td key={idx} style={{textAlign:'center',color:char.relations[idx]?'#1F4E79':'#BFBFBF',fontSize:'12px'}}>
+                    {char.relations[idx]||'—'}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  function CharIndex() {
+    return (
+      <div>
+        {Object.entries(charIndexGroups).map(([race, chars]) => (
+          <div key={race} style={{marginBottom:'16px',borderRadius:'6px',overflow:'hidden',border:'1px solid #D1D9E6'}}>
+            <div className="group-hdr" style={{background:RACE_COLORS[race]||'#F5F5F5'}}>
+              ▌ {race}
+              <span style={{color:'#6B7280',fontWeight:'normal',fontSize:'11px'}}>（{chars.length} 人）</span>
+            </div>
+            <div className="scroll-x">
+              <table style={{minWidth:'500px'}}>
+                <thead>
+                  <tr style={{background:'#2E75B6'}}>
+                    {['名字','派系','年齡','職業（棋種）','招募狀態'].map(h=><th key={h}>{h}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {chars.map((char,i) => (
+                    <tr key={char.name}>
+                      <td style={{fontWeight:'600'}}>{char.name}</td>
+                      <td style={{textAlign:'center',fontSize:'12px'}}>{char.faction}</td>
+                      <td style={{textAlign:'center',fontSize:'12px'}}>{char.age}</td>
+                      <td style={{textAlign:'center',fontSize:'12px'}}>{char.job}</td>
+                      <td style={{textAlign:'center'}}>
+                        <span className={char.source==='可招募'?'badge-r':'badge-nr'}
+                          style={{padding:'2px 8px',borderRadius:'12px',fontWeight:'bold',fontSize:'11px'}}>
+                          {char.source}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  const TABS = ['可招募角色','不可招募角色','關聯角色索引','角色索引清單'];
+  const COUNTS = [rec.length, nrec.length, allChars.length, allChars.length];
+
+  return (
+    <div style={{minHeight:'100vh',background:'#F0F4FB'}}>
+      <div style={{background:'linear-gradient(135deg,#1F4E79,#2E75B6)',color:'white',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div>
+          <div style={{fontSize:'18px',fontWeight:'bold'}}>🎮 遊戲角色管理系統</div>
+          <div style={{fontSize:'12px',opacity:0.75,marginTop:'3px'}}>共 {allChars.length} 位角色・關聯資料雙向即時同步</div>
+        </div>
+        <div style={{fontSize:'12px',opacity:0.75,textAlign:'right',lineHeight:'1.6'}}>
+          <div>可招募：{rec.length} 人</div>
+          <div>不可招募：{nrec.length} 人</div>
+        </div>
+      </div>
+
+      <div style={{background:'white',borderBottom:'2px solid #E5E7EB',display:'flex',overflowX:'auto'}}>
+        {TABS.map((label, i) => (
+          <button key={i} className={`tab-btn ${tab===i?'active':''}`} onClick={() => setTab(i)}>
+            {label}
+            <span style={{marginLeft:'5px',fontSize:'11px',background:tab===i?'#1F4E79':'#E5E7EB',color:tab===i?'white':'#6B7280',borderRadius:'10px',padding:'1px 7px'}}>
+              {COUNTS[i]}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {(tab===0||tab===1) && (
+        <div className="hint-bar">
+          <span>💡</span>
+          <span>點擊關聯角色欄的 <strong>＋</strong> 可新增關聯（支援搜尋）；點擊 <strong>×</strong> 可刪除。操作後對方角色的關聯欄會<strong>自動雙向同步</strong>，「關聯角色索引」與「角色索引清單」即時更新。</span>
+        </div>
+      )}
+
+      <div style={{padding:'16px'}}>
+        {tab===0 && <DataTable chars={rec}/>}
+        {tab===1 && <DataTable chars={nrec}/>}
+        {tab===2 && <RelationIndex/>}
+        {tab===3 && <CharIndex/>}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>
