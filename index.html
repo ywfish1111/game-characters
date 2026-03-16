@@ -26,18 +26,20 @@ tr:hover td { background: #E8F0FD !important; }
 .add-btn:hover { background:#D5E8CC; }
 .tab-btn { padding:10px 16px; border:none; background:none; cursor:pointer; font-size:13px; border-bottom:3px solid transparent; color:#6B7280; white-space:nowrap; }
 .tab-btn.active { color:#1F4E79; border-bottom-color:#1F4E79; font-weight:bold; }
-.dropdown { position:absolute; z-index:9999; background:white; border:1px solid #C0C8D8; border-radius:6px; box-shadow:0 4px 16px rgba(0,0,0,0.15); min-width:170px; max-height:200px; overflow-y:auto; top:100%; left:0; margin-top:2px; }
-.dd-item { padding:7px 12px; cursor:pointer; font-size:12px; display:flex; justify-content:space-between; gap:8px; }
+.dropdown { position:absolute; z-index:9999; background:white; border:1px solid #C0C8D8; border-radius:6px; box-shadow:0 4px 16px rgba(0,0,0,0.15); min-width:200px; max-height:220px; overflow-y:auto; top:100%; left:0; margin-top:2px; }
+.dd-item { padding:8px 12px; cursor:pointer; font-size:13px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
 .dd-item:hover { background:#E8F0FD; }
-.badge-r { font-size:10px; padding:1px 6px; border-radius:10px; background:#E2EFDA; color:#375623; }
-.badge-nr { font-size:10px; padding:1px 6px; border-radius:10px; background:#FCE4D6; color:#833C00; }
+.dd-empty { padding:10px 12px; font-size:12px; color:#9CA3AF; text-align:center; }
+.badge-r { font-size:10px; padding:2px 7px; border-radius:10px; background:#E2EFDA; color:#375623; white-space:nowrap; }
+.badge-nr { font-size:10px; padding:2px 7px; border-radius:10px; background:#FCE4D6; color:#833C00; white-space:nowrap; }
 .group-hdr { padding:8px 14px; font-weight:bold; font-size:12px; color:#1F4E79; border-left:4px solid #2E75B6; display:flex; align-items:center; gap:8px; }
 .rel-wrap { display:flex; flex-wrap:wrap; align-items:center; min-width:150px; }
-.rel-input { border:1px solid #2E75B6; border-radius:4px; padding:3px 8px; font-size:12px; width:120px; outline:none; }
+.rel-input { border:1px solid #2E75B6; border-radius:6px; padding:4px 10px; font-size:13px; width:140px; outline:none; background:white; }
+.rel-input:focus { border-color:#1F4E79; box-shadow:0 0 0 2px #BFDBFE; }
 .hint-bar { background:#EFF6FF; border-bottom:1px solid #BFDBFE; padding:8px 20px; font-size:12px; color:#1E40AF; display:flex; align-items:flex-start; gap:6px; }
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; display:flex; align-items:center; justify-content:center; padding:16px; }
 .modal { background:white; border-radius:10px; padding:24px; width:100%; max-width:520px; box-shadow:0 8px 32px rgba(0,0,0,0.2); max-height:90vh; overflow-y:auto; }
-.modal h2 { font-size:16px; color:#1F4E79; margin-bottom:18px; display:flex; align-items:center; gap:8px; }
+.modal h2 { font-size:16px; color:#1F4E79; margin-bottom:18px; }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
 .form-group { display:flex; flex-direction:column; gap:4px; margin-bottom:12px; }
 .form-group label { font-size:12px; color:#374151; font-weight:bold; }
@@ -68,8 +70,7 @@ const firebaseConfig = {
   projectId: "game-characters-5eba7",
   storageBucket: "game-characters-5eba7.firebasestorage.app",
   messagingSenderId: "602475714580",
-  appId: "1:602475714580:web:d890cf85c98cfabe422f01",
-  measurementId: "G-H3JRTQJH8F"
+  appId: "1:602475714580:web:d890cf85c98cfabe422f01"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -82,112 +83,122 @@ const RACE_COLORS = {
   '鳥人':'#E8F6FD','亞人':'#F3E8FF','魔女':'#FDE8F4','魔物':'#FFF8E1',
   '方舟':'#EAF0FB','魔鬼':'#FDEDEC','神':'#FEFCE8'
 };
-const RACES = ['人類','精靈','龍人','矮人','鳥人','亞人','魔女','魔物','方舟','魔鬼','神','其他'];
-const FACTIONS = ['教會','中立','亞人','無','其他'];
-const JOBS = ['騎士','城堡','國王','主教','皇后','無','其他'];
+const RACES       = ['人類','精靈','龍人','矮人','鳥人','亞人','魔女','魔物','方舟','魔鬼','神','其他'];
+const FACTIONS    = ['教會','中立','亞人','無','其他'];
+const JOBS        = ['騎士','城堡','國王','主教','皇后','無','其他'];
 const PERSONALITIES = ['古板者','調停者','膽小者','享樂者','激進者','無',''];
 
-const SEED_REC = [
-  {name:'賽爾維斯・庫斯托',race:'人類',personality:'古板者',faction:'教會',age:'29',job:'騎士',textLink:'聖都招募角色名錄.docx',relations:['莉賽爾・庫斯托','阿爾諾・維赫']},
-  {name:'莉賽爾・庫斯托',race:'人類',personality:'調停者',faction:'教會',age:'19',job:'城堡',textLink:'聖都招募角色名錄.docx',relations:['賽爾維斯・庫斯托','阿爾諾・維赫']},
-  {name:'阿爾諾・維赫',race:'人類',personality:'膽小者',faction:'教會',age:'26',job:'國王',textLink:'嚮導-阿爾諾',relations:['莉賽爾・庫斯托']},
-  {name:'艾拉',race:'人類',personality:'膽小者',faction:'教會',age:'20',job:'主教',textLink:'聖都招募角色名錄.docx',relations:[]},
-  {name:'伊斯卡',race:'精靈',personality:'享樂者',faction:'教會',age:'16',job:'主教',textLink:'聖都招募角色名錄.docx',relations:[]},
-  {name:'格魯・岩脊',race:'龍人',personality:'激進者',faction:'教會',age:'105',job:'城堡',textLink:'聖都招募角色名錄.docx',relations:[]},
-  {name:'赫莫里斯',race:'鳥人',personality:'古板者',faction:'教會',age:'45',job:'騎士',textLink:'聖都招募角色名錄.docx',relations:[]},
-  {name:'芬妮瑟',race:'魔女',personality:'享樂者',faction:'中立',age:'432',job:'主教',textLink:'聖地可招募角色.docx',relations:[]},
-  {name:'特隆克',race:'龍人',personality:'激進者',faction:'教會',age:'80',job:'城堡',textLink:'聖地可招募角色.docx',relations:[]},
-  {name:'凱洛希亞',race:'人類',personality:'激進者',faction:'教會',age:'17',job:'騎士',textLink:'聖地可招募角色.docx',relations:[]},
-  {name:'布拉斯特',race:'矮人',personality:'膽小者',faction:'中立',age:'52',job:'主教',textLink:'聖地可招募角色.docx',relations:[]},
-  {name:'科里法',race:'鳥人',personality:'古板者',faction:'教會',age:'34',job:'騎士',textLink:'聖地可招募角色.docx',relations:[]},
-  {name:'飽伯',race:'魔物',personality:'調停者',faction:'亞人',age:'4',job:'皇后',textLink:'飽柏_人物誌',relations:[]},
-  {name:'納恩',race:'精靈',personality:'調停者',faction:'中立',age:'42',job:'騎士',textLink:'納恩/莉莉/帕茲',relations:['莉莉','帕茲']},
-  {name:'莉莉',race:'精靈',personality:'享樂者',faction:'中立',age:'18',job:'城堡',textLink:'納恩/莉莉/帕茲',relations:['納恩','帕茲']},
-  {name:'帕茲',race:'亞人',personality:'膽小者',faction:'中立',age:'1560',job:'主教',textLink:'納恩/莉莉/帕茲',relations:['納恩','莉莉']},
-  {name:'古斯',race:'精靈',personality:'膽小者',faction:'教會',age:'',job:'主教',textLink:'古娜與古斯',relations:[]},
-];
-const SEED_NR = [
-  {name:'巴薩克',race:'人類',personality:'激進者',faction:'中立',age:'514',job:'皇后',textLink:'',relations:[]},
-  {name:'涅克斯',race:'亞人',personality:'激進者',faction:'教會',age:'4950',job:'皇后',textLink:'',relations:['白羽','極寒','艾比','安瓦']},
-  {name:'極寒',race:'方舟',personality:'調停者',faction:'教會',age:'無',job:'皇后',textLink:'',relations:[]},
-  {name:'阿涅澤',race:'人類',personality:'古板者',faction:'中立',age:'80',job:'皇后',textLink:'',relations:[]},
-  {name:'維爾',race:'人類',personality:'調停者',faction:'中立',age:'132',job:'皇后',textLink:'',relations:[]},
-  {name:'娜塔夏',race:'人類',personality:'膽小者',faction:'中立',age:'1544',job:'皇后',textLink:'',relations:[]},
-  {name:'伯納德',race:'人類',personality:'激進者',faction:'中立',age:'74',job:'騎士',textLink:'',relations:[]},
-  {name:'白羽',race:'神',personality:'無',faction:'無',age:'無',job:'無',textLink:'',relations:['艾蕾莎・格林伍德','代行官E','涅克斯','極寒']},
-  {name:'代行官E',race:'人類',personality:'調停者',faction:'教會',age:'31',job:'皇后',textLink:'',relations:['白羽','艾蕾莎・格林伍德']},
-  {name:'艾蕾莎・格林伍德',race:'人類',personality:'無',faction:'教會',age:'26',job:'無',textLink:'',relations:['白羽','代行官E']},
-  {name:'阿帕蒂',race:'亞人',personality:'激進者',faction:'中立',age:'165/6080',job:'國王',textLink:'',relations:[]},
-  {name:'佛雷德',race:'龍人',personality:'膽小者',faction:'中立',age:'19',job:'國王',textLink:'',relations:[]},
-  {name:'愛蕾諾雅・庫斯托',race:'人類',personality:'古板者',faction:'教會',age:'27',job:'無',textLink:'聖都騎士-艾蕾諾雅',relations:['代行官E']},
-  {name:'德利達',race:'魔鬼',personality:'無',faction:'亞人',age:'7522',job:'無',textLink:'焦慮的魔鬼（德利達）',relations:[]},
-  {name:'空間',race:'方舟',personality:'無',faction:'無',age:'無',job:'無',textLink:'(方舟)空間 的副本',relations:['白羽']},
-  {name:'古娜',race:'精靈',personality:'',faction:'教會',age:'',job:'',textLink:'古娜與古斯',relations:[]},
-  {name:'教皇',race:'鳥人',personality:'無',faction:'教會',age:'5200',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:[]},
-  {name:'艾比',race:'人類',personality:'無',faction:'教會',age:'5124',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:['涅克斯']},
-  {name:'安瓦',race:'龍人',personality:'無',faction:'教會',age:'5211',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:['涅克斯']},
-  {name:'庫拉多尼',race:'精靈',personality:'無',faction:'教會',age:'3512',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:[]},
-  {name:'夢魘',race:'精靈',personality:'無',faction:'教會',age:'5032',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:[]},
-  {name:'醫生',race:'人類',personality:'無',faction:'教會',age:'5011',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:[]},
-  {name:'戰爭',race:'人類',personality:'無',faction:'教會',age:'5026',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:['操偶師','涅克斯','安瓦']},
-  {name:'操偶師',race:'人類',personality:'無',faction:'教會',age:'5026',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:['戰爭']},
-  {name:'娜圖拉',race:'精靈',personality:'無',faction:'教會',age:'',job:'無',textLink:'神選者的紀錄檔案 的副本',relations:[]},
+const SEED = [
+  {name:'賽爾維斯・庫斯托',race:'人類',personality:'古板者',faction:'教會',age:'29',job:'騎士',textLink:'聖都招募角色名錄.docx',source:'recruitable',relations:['莉賽爾・庫斯托','阿爾諾・維赫']},
+  {name:'莉賽爾・庫斯托',race:'人類',personality:'調停者',faction:'教會',age:'19',job:'城堡',textLink:'聖都招募角色名錄.docx',source:'recruitable',relations:['賽爾維斯・庫斯托','阿爾諾・維赫']},
+  {name:'阿爾諾・維赫',race:'人類',personality:'膽小者',faction:'教會',age:'26',job:'國王',textLink:'嚮導-阿爾諾',source:'recruitable',relations:['莉賽爾・庫斯托']},
+  {name:'艾拉',race:'人類',personality:'膽小者',faction:'教會',age:'20',job:'主教',textLink:'聖都招募角色名錄.docx',source:'recruitable',relations:[]},
+  {name:'伊斯卡',race:'精靈',personality:'享樂者',faction:'教會',age:'16',job:'主教',textLink:'聖都招募角色名錄.docx',source:'recruitable',relations:[]},
+  {name:'格魯・岩脊',race:'龍人',personality:'激進者',faction:'教會',age:'105',job:'城堡',textLink:'聖都招募角色名錄.docx',source:'recruitable',relations:[]},
+  {name:'赫莫里斯',race:'鳥人',personality:'古板者',faction:'教會',age:'45',job:'騎士',textLink:'聖都招募角色名錄.docx',source:'recruitable',relations:[]},
+  {name:'芬妮瑟',race:'魔女',personality:'享樂者',faction:'中立',age:'432',job:'主教',textLink:'聖地可招募角色.docx',source:'recruitable',relations:[]},
+  {name:'特隆克',race:'龍人',personality:'激進者',faction:'教會',age:'80',job:'城堡',textLink:'聖地可招募角色.docx',source:'recruitable',relations:[]},
+  {name:'凱洛希亞',race:'人類',personality:'激進者',faction:'教會',age:'17',job:'騎士',textLink:'聖地可招募角色.docx',source:'recruitable',relations:[]},
+  {name:'布拉斯特',race:'矮人',personality:'膽小者',faction:'中立',age:'52',job:'主教',textLink:'聖地可招募角色.docx',source:'recruitable',relations:[]},
+  {name:'科里法',race:'鳥人',personality:'古板者',faction:'教會',age:'34',job:'騎士',textLink:'聖地可招募角色.docx',source:'recruitable',relations:[]},
+  {name:'飽伯',race:'魔物',personality:'調停者',faction:'亞人',age:'4',job:'皇后',textLink:'飽柏_人物誌',source:'recruitable',relations:[]},
+  {name:'納恩',race:'精靈',personality:'調停者',faction:'中立',age:'42',job:'騎士',textLink:'納恩/莉莉/帕茲',source:'recruitable',relations:['莉莉','帕茲']},
+  {name:'莉莉',race:'精靈',personality:'享樂者',faction:'中立',age:'18',job:'城堡',textLink:'納恩/莉莉/帕茲',source:'recruitable',relations:['納恩','帕茲']},
+  {name:'帕茲',race:'亞人',personality:'膽小者',faction:'中立',age:'1560',job:'主教',textLink:'納恩/莉莉/帕茲',source:'recruitable',relations:['納恩','莉莉']},
+  {name:'古斯',race:'精靈',personality:'膽小者',faction:'教會',age:'',job:'主教',textLink:'古娜與古斯',source:'recruitable',relations:[]},
+  {name:'巴薩克',race:'人類',personality:'激進者',faction:'中立',age:'514',job:'皇后',textLink:'',source:'non-recruitable',relations:[]},
+  {name:'涅克斯',race:'亞人',personality:'激進者',faction:'教會',age:'4950',job:'皇后',textLink:'',source:'non-recruitable',relations:['白羽','極寒','艾比','安瓦']},
+  {name:'極寒',race:'方舟',personality:'調停者',faction:'教會',age:'無',job:'皇后',textLink:'',source:'non-recruitable',relations:[]},
+  {name:'阿涅澤',race:'人類',personality:'古板者',faction:'中立',age:'80',job:'皇后',textLink:'',source:'non-recruitable',relations:[]},
+  {name:'維爾',race:'人類',personality:'調停者',faction:'中立',age:'132',job:'皇后',textLink:'',source:'non-recruitable',relations:[]},
+  {name:'娜塔夏',race:'人類',personality:'膽小者',faction:'中立',age:'1544',job:'皇后',textLink:'',source:'non-recruitable',relations:[]},
+  {name:'伯納德',race:'人類',personality:'激進者',faction:'中立',age:'74',job:'騎士',textLink:'',source:'non-recruitable',relations:[]},
+  {name:'白羽',race:'神',personality:'無',faction:'無',age:'無',job:'無',textLink:'',source:'non-recruitable',relations:['艾蕾莎・格林伍德','代行官E','涅克斯','極寒']},
+  {name:'代行官E',race:'人類',personality:'調停者',faction:'教會',age:'31',job:'皇后',textLink:'',source:'non-recruitable',relations:['白羽','艾蕾莎・格林伍德']},
+  {name:'艾蕾莎・格林伍德',race:'人類',personality:'無',faction:'教會',age:'26',job:'無',textLink:'',source:'non-recruitable',relations:['白羽','代行官E']},
+  {name:'阿帕蒂',race:'亞人',personality:'激進者',faction:'中立',age:'165/6080',job:'國王',textLink:'',source:'non-recruitable',relations:[]},
+  {name:'佛雷德',race:'龍人',personality:'膽小者',faction:'中立',age:'19',job:'國王',textLink:'',source:'non-recruitable',relations:[]},
+  {name:'愛蕾諾雅・庫斯托',race:'人類',personality:'古板者',faction:'教會',age:'27',job:'無',textLink:'聖都騎士-艾蕾諾雅',source:'non-recruitable',relations:['代行官E']},
+  {name:'德利達',race:'魔鬼',personality:'無',faction:'亞人',age:'7522',job:'無',textLink:'焦慮的魔鬼（德利達）',source:'non-recruitable',relations:[]},
+  {name:'空間',race:'方舟',personality:'無',faction:'無',age:'無',job:'無',textLink:'(方舟)空間 的副本',source:'non-recruitable',relations:['白羽']},
+  {name:'古娜',race:'精靈',personality:'',faction:'教會',age:'',job:'',textLink:'古娜與古斯',source:'non-recruitable',relations:[]},
+  {name:'教皇',race:'鳥人',personality:'無',faction:'教會',age:'5200',job:'無',textLink:'神選者的紀錄檔案 的副本',source:'non-recruitable',relations:[]},
+  {name:'艾比',race:'人類',personality:'無',faction:'教會',age:'5124',job:'無',textLink:'神選者的紀錄檔案 的副本',source:'non-recruitable',relations:['涅克斯']},
+  {name:'安瓦',race:'龍人',personality:'無',faction:'教會',age:'5211',job:'無',textLink:'神選者的紀錄檔案 的副本',source:'non-recruitable',relations:['涅克斯']},
+  {name:'庫拉多尼',race:'精靈',personality:'無',faction:'教會',age:'3512',job:'無',textLink:'神選者的紀錄檔案 的副本',source:'non-recruitable',relations:[]},
+  {name:'夢魘',race:'精靈',personality:'無',faction:'教會',age:'5032',job:'無',textLink:'神選者的紀錄檔案 的副本',source:'non-recruitable',relations:[]},
+  {name:'醫生',race:'人類',personality:'無',faction:'教會',age:'5011',job:'無',textLink:'神選者的紀錄檔案 的副本',source:'non-recruitable',relations:[]},
+  {name:'戰爭',race:'人類',personality:'無',faction:'教會',age:'5026',job:'無',textLink:'神選者的紀錄檔案 的副本',source:'non-recruitable',relations:['操偶師','涅克斯','安瓦']},
+  {name:'操偶師',race:'人類',personality:'無',faction:'教會',age:'5026',job:'無',textLink:'神選者的紀錄檔案 的副本',source:'non-recruitable',relations:['戰爭']},
+  {name:'娜圖拉',race:'精靈',personality:'無',faction:'教會',age:'',job:'無',textLink:'神選者的紀錄檔案 的副本',source:'non-recruitable',relations:[]},
 ];
 
-// ── Firestore helpers ──────────────────────────────────────────
 async function seedIfEmpty() {
   const snap = await db.collection('characters').limit(1).get();
   if (!snap.empty) return;
   const batch = db.batch();
-  [...SEED_REC.map(c=>({...c,source:'recruitable'})),
-   ...SEED_NR.map(c=>({...c,source:'non-recruitable'}))]
-    .forEach(c => {
-      const ref = db.collection('characters').doc(c.name);
-      batch.set(ref, c);
+  SEED.forEach(c => batch.set(db.collection('characters').doc(c.name), c));
+  await batch.commit();
+}
+
+// ── Optimistic relation update ─────────────────────────────────
+async function fsUpdateRelations(nameA, nameB, action, setChars) {
+  // Optimistic update first
+  setChars(prev => {
+    const next = prev.map(c => {
+      if (c.name === nameA || c.name === nameB) {
+        const other = c.name === nameA ? nameB : nameA;
+        let rels = c.relations || [];
+        if (action === 'add') {
+          rels = rels.includes(other) ? rels : [...rels, other];
+        } else {
+          rels = rels.filter(r => r !== other);
+        }
+        return {...c, relations: rels};
+      }
+      return c;
     });
-  await batch.commit();
+    return next;
+  });
+  // Background sync
+  try {
+    const [snapA, snapB] = await Promise.all([
+      db.collection('characters').doc(nameA).get(),
+      db.collection('characters').doc(nameB).get(),
+    ]);
+    if (!snapA.exists || !snapB.exists) return;
+    let relA = snapA.data().relations || [];
+    let relB = snapB.data().relations || [];
+    if (action === 'add') {
+      if (!relA.includes(nameB)) relA = [...relA, nameB];
+      if (!relB.includes(nameA)) relB = [...relB, nameA];
+    } else {
+      relA = relA.filter(r => r !== nameB);
+      relB = relB.filter(r => r !== nameA);
+    }
+    const batch = db.batch();
+    batch.update(db.collection('characters').doc(nameA), {relations: relA});
+    batch.update(db.collection('characters').doc(nameB), {relations: relB});
+    await batch.commit();
+  } catch(e) { console.error('Sync error', e); }
 }
 
-async function fsAddChar(char) {
-  await db.collection('characters').doc(char.name).set(char);
-}
-
-async function fsUpdateRelations(nameA, nameB, action) {
-  // action: 'add' | 'remove'
-  const snapA = await db.collection('characters').doc(nameA).get();
-  const snapB = await db.collection('characters').doc(nameB).get();
-  if (!snapA.exists || !snapB.exists) return;
-  const dataA = snapA.data();
-  const dataB = snapB.data();
-  let relA = dataA.relations || [];
-  let relB = dataB.relations || [];
-  if (action === 'add') {
-    if (!relA.includes(nameB)) relA = [...relA, nameB];
-    if (!relB.includes(nameA)) relB = [...relB, nameA];
-  } else {
-    relA = relA.filter(r => r !== nameB);
-    relB = relB.filter(r => r !== nameA);
-  }
-  const batch = db.batch();
-  batch.update(db.collection('characters').doc(nameA), { relations: relA });
-  batch.update(db.collection('characters').doc(nameB), { relations: relB });
-  await batch.commit();
-}
-
-// ── Modal ──────────────────────────────────────────────────────
-function AddCharModal({ allChars, onClose }) {
-  const [form, setForm] = useState({ name:'', race:'人類', personality:'', faction:'教會', age:'', job:'騎士', textLink:'', source:'recruitable' });
+// ── Add Character Modal ────────────────────────────────────────
+function AddCharModal({ allChars, setChars, onClose }) {
+  const [form, setForm] = useState({name:'',race:'人類',personality:'',faction:'教會',age:'',job:'騎士',textLink:'',source:'recruitable'});
   const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false);
   const set = (k,v) => setForm(f=>({...f,[k]:v}));
 
   const handleSubmit = async () => {
-    if (!form.name.trim()) { setError('請輸入角色名稱'); return; }
-    if (allChars.some(c=>c.name===form.name.trim())) { setError('此角色名稱已存在'); return; }
-    setSaving(true);
-    await fsAddChar({ ...form, name: form.name.trim(), relations: [] });
-    setSaving(false);
+    const name = form.name.trim();
+    if (!name) { setError('請輸入角色名稱'); return; }
+    if (allChars.some(c=>c.name===name)) { setError('此角色名稱已存在'); return; }
+    const newChar = {...form, name, relations:[]};
+    // Optimistic: add to local state immediately
+    setChars(prev => [...prev, newChar]);
     onClose();
+    // Background write
+    db.collection('characters').doc(name).set(newChar).catch(console.error);
   };
 
   return (
@@ -196,7 +207,7 @@ function AddCharModal({ allChars, onClose }) {
         <h2>✨ 新增角色</h2>
         <div className="form-group">
           <label>角色名稱 <span className="required">*</span></label>
-          <input value={form.name} onChange={e=>{set('name',e.target.value);setError('');}} placeholder="輸入角色名稱" />
+          <input value={form.name} onChange={e=>{set('name',e.target.value);setError('');}} placeholder="輸入角色名稱" autoFocus />
           {error && <div className="error-msg">{error}</div>}
         </div>
         <div className="form-group">
@@ -247,75 +258,134 @@ function AddCharModal({ allChars, onClose }) {
           </div>
         </div>
         <div style={{marginTop:'20px',display:'flex',gap:'10px',justifyContent:'flex-end'}}>
-          <button className="btn-secondary" onClick={onClose} disabled={saving}>取消</button>
-          <button className="btn-primary" onClick={handleSubmit} disabled={saving}>
-            {saving ? '儲存中…' : '✅ 新增角色'}
-          </button>
+          <button className="btn-secondary" onClick={onClose}>取消</button>
+          <button className="btn-primary" onClick={handleSubmit}>✅ 新增角色</button>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Main App ───────────────────────────────────────────────────
-function App() {
-  const [characters, setCharacters] = useState(null); // null = loading
-  const [connected, setConnected] = useState(false);
-  const [tab, setTab] = useState(0);
-  const [addingRel, setAddingRel] = useState(null);
-  const [relSearch, setRelSearch] = useState('');
-  const [showAddModal, setShowAddModal] = useState(false);
+// ── RelTags: 修正中文輸入法 + 顯示全部角色 ──────────────────────
+function RelTags({ char, allChars, setChars, addingRel, setAddingRel }) {
+  const [search, setSearch] = useState('');
+  const [composing, setComposing] = useState(false); // 追蹤中文組字狀態
   const inputRef = useRef(null);
   const wrapRef = useRef(null);
-
-  // Real-time listener
-  useEffect(() => {
-    seedIfEmpty().catch(console.error);
-    const unsub = db.collection('characters').onSnapshot(
-      snap => {
-        const docs = snap.docs.map(d => d.data());
-        setCharacters(docs);
-        setConnected(true);
-      },
-      err => { console.error(err); setConnected(false); }
-    );
-    return unsub;
-  }, []);
+  const isOpen = addingRel === char.name;
 
   useEffect(() => {
-    if (addingRel && inputRef.current) inputRef.current.focus();
-  }, [addingRel]);
+    if (isOpen && inputRef.current) inputRef.current.focus();
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) setSearch('');
+  }, [isOpen]);
 
   useEffect(() => {
     const handler = e => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
-        setAddingRel(null); setRelSearch('');
+      if (isOpen && wrapRef.current && !wrapRef.current.contains(e.target)) {
+        setAddingRel(null);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
+  }, [isOpen]);
+
+  // 搜尋時使用已組字完成的文字（不受組字過程干擾）
+  const suggestions = useMemo(() => {
+    const existRels = char.relations || [];
+    return allChars
+      .filter(c => c.name !== char.name && !existRels.includes(c.name))
+      .filter(c => !search || c.name.includes(search))
+      .sort((a,b) => {
+        // 可招募排前面，同類依名字排序
+        if (a.source !== b.source) return a.source === 'recruitable' ? -1 : 1;
+        return a.name.localeCompare(b.name, 'zh');
+      });
+  }, [char, allChars, search]);
+
+  const handleAdd = (relName) => {
+    setAddingRel(null);
+    fsUpdateRelations(char.name, relName, 'add', setChars);
+  };
+
+  const handleRemove = (relName) => {
+    fsUpdateRelations(char.name, relName, 'remove', setChars);
+  };
+
+  return (
+    <div className="rel-wrap" ref={isOpen ? wrapRef : null}>
+      {(char.relations||[]).map(rel=>(
+        <span key={rel} className="tag">
+          {rel}
+          <button className="tag-del" onClick={()=>handleRemove(rel)}>×</button>
+        </span>
+      ))}
+      {isOpen ? (
+        <div style={{position:'relative'}}>
+          <input
+            ref={inputRef}
+            className="rel-input"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            // 中文輸入法：組字中不篩選，組字完成才更新
+            onCompositionStart={() => setComposing(true)}
+            onCompositionEnd={e => { setComposing(false); setSearch(e.target.value); }}
+            onKeyDown={e => {
+              if (e.key==='Escape') { setAddingRel(null); }
+              // 組字中不觸發 Enter 選取
+              if (e.key==='Enter' && !composing && suggestions.length>0) handleAdd(suggestions[0].name);
+            }}
+            placeholder="搜尋角色名稱…"
+          />
+          <div className="dropdown">
+            {suggestions.length === 0
+              ? <div className="dd-empty">找不到符合的角色</div>
+              : suggestions.map(s=>(
+                  <div key={s.name} className="dd-item"
+                    onMouseDown={e=>{ e.preventDefault(); handleAdd(s.name); }}>
+                    <span>{s.name}</span>
+                    <span className={s.source==='recruitable'?'badge-r':'badge-nr'}>
+                      {s.source==='recruitable'?'可招募':'不可招募'}
+                    </span>
+                  </div>
+                ))
+            }
+          </div>
+        </div>
+      ) : (
+        <button className="add-btn" onClick={()=>setAddingRel(char.name)}>＋</button>
+      )}
+    </div>
+  );
+}
+
+// ── Main App ───────────────────────────────────────────────────
+function App() {
+  const [characters, setCharacters] = useState(null);
+  const [connected, setConnected]   = useState(false);
+  const [tab, setTab]               = useState(0);
+  const [addingRel, setAddingRel]   = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  useEffect(() => {
+    seedIfEmpty().catch(console.error);
+    const unsub = db.collection('characters').onSnapshot(
+      snap => { setCharacters(snap.docs.map(d=>d.data())); setConnected(true); },
+      err  => { console.error(err); setConnected(false); }
+    );
+    return unsub;
   }, []);
 
-  const rec  = useMemo(() => (characters||[]).filter(c=>c.source==='recruitable'), [characters]);
-  const nrec = useMemo(() => (characters||[]).filter(c=>c.source==='non-recruitable'), [characters]);
-  const allChars = useMemo(() => [
-    ...rec.map(c=>({...c,label:'可招募'})),
-    ...nrec.map(c=>({...c,label:'不可招募'}))
-  ], [rec, nrec]);
-
-  const suggestions = useMemo(() => {
-    if (!addingRel) return [];
-    const cur = allChars.find(c=>c.name===addingRel);
-    return allChars
-      .filter(c=>c.name!==addingRel && !cur?.relations?.includes(c.name))
-      .filter(c=>!relSearch||c.name.includes(relSearch))
-      .slice(0,12);
-  }, [addingRel, relSearch, allChars]);
+  const allChars = useMemo(() => characters || [], [characters]);
+  const rec  = useMemo(() => allChars.filter(c=>c.source==='recruitable'), [allChars]);
+  const nrec = useMemo(() => allChars.filter(c=>c.source==='non-recruitable'), [allChars]);
 
   const charIndexGroups = useMemo(() => {
     const sorted = [...allChars].sort((a,b)=>{
-      if (a.race!==b.race) return a.race.localeCompare(b.race,'zh');
-      if (a.faction!==b.faction) return a.faction.localeCompare(b.faction,'zh');
+      if(a.race!==b.race) return a.race.localeCompare(b.race,'zh');
+      if(a.faction!==b.faction) return a.faction.localeCompare(b.faction,'zh');
       return a.name.localeCompare(b.name,'zh');
     });
     const g = {};
@@ -323,52 +393,7 @@ function App() {
     return g;
   }, [allChars]);
 
-  const handleAddRel = async (charName, relName) => {
-    if (!charName||!relName||charName===relName) return;
-    setAddingRel(null); setRelSearch('');
-    await fsUpdateRelations(charName, relName, 'add');
-  };
-
-  const handleRemoveRel = async (charName, relName) => {
-    await fsUpdateRelations(charName, relName, 'remove');
-  };
-
-  function RelTags({char}) {
-    return (
-      <div className="rel-wrap" ref={addingRel===char.name ? wrapRef : null}>
-        {(char.relations||[]).map(rel=>(
-          <span key={rel} className="tag">
-            {rel}
-            <button className="tag-del" onClick={()=>handleRemoveRel(char.name,rel)}>×</button>
-          </span>
-        ))}
-        {addingRel===char.name ? (
-          <div style={{position:'relative'}}>
-            <input ref={inputRef} className="rel-input" value={relSearch}
-              onChange={e=>setRelSearch(e.target.value)}
-              onKeyDown={e=>{
-                if(e.key==='Escape'){setAddingRel(null);setRelSearch('');}
-                if(e.key==='Enter'&&suggestions.length>0) handleAddRel(char.name,suggestions[0].name);
-              }}
-              placeholder="搜尋角色名稱…" />
-            {suggestions.length>0&&(
-              <div className="dropdown">
-                {suggestions.map(s=>(
-                  <div key={s.name} className="dd-item"
-                    onMouseDown={e=>{e.preventDefault();handleAddRel(char.name,s.name);}}>
-                    <span>{s.name}</span>
-                    <span className={s.label==='可招募'?'badge-r':'badge-nr'}>{s.label}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ):(
-          <button className="add-btn" onClick={()=>{setAddingRel(char.name);setRelSearch('');}}>＋</button>
-        )}
-      </div>
-    );
-  }
+  const label = c => c.source==='recruitable'?'可招募':'不可招募';
 
   function DataTable({chars}) {
     return (
@@ -389,7 +414,10 @@ function App() {
                 <td style={{textAlign:'center',fontSize:'12px'}}>{char.age}</td>
                 <td style={{textAlign:'center',fontSize:'12px'}}>{char.job}</td>
                 <td style={{fontSize:'11px',color:'#2563EB',maxWidth:'130px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={char.textLink}>{char.textLink}</td>
-                <td><RelTags char={char}/></td>
+                <td>
+                  <RelTags char={char} allChars={allChars} setChars={setCharacters}
+                    addingRel={addingRel} setAddingRel={setAddingRel}/>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -410,9 +438,9 @@ function App() {
               <tr key={char.name}>
                 <td style={{fontWeight:'600',whiteSpace:'nowrap'}}>{char.name}</td>
                 <td style={{textAlign:'center'}}>
-                  <span className={char.label==='可招募'?'badge-r':'badge-nr'}
+                  <span className={char.source==='recruitable'?'badge-r':'badge-nr'}
                     style={{padding:'2px 8px',borderRadius:'12px',fontWeight:'bold',fontSize:'11px'}}>
-                    {char.label}
+                    {label(char)}
                   </span>
                 </td>
                 {[0,1,2,3,4,5].map(idx=>(
@@ -448,9 +476,9 @@ function App() {
                       <td style={{textAlign:'center',fontSize:'12px'}}>{char.age}</td>
                       <td style={{textAlign:'center',fontSize:'12px'}}>{char.job}</td>
                       <td style={{textAlign:'center'}}>
-                        <span className={char.label==='可招募'?'badge-r':'badge-nr'}
+                        <span className={char.source==='recruitable'?'badge-r':'badge-nr'}
                           style={{padding:'2px 8px',borderRadius:'12px',fontWeight:'bold',fontSize:'11px'}}>
-                          {char.label}
+                          {label(char)}
                         </span>
                       </td>
                     </tr>
@@ -474,19 +502,19 @@ function App() {
     );
   }
 
-  const TABS = ['可招募角色','不可招募角色','關聯角色索引','角色索引清單'];
+  const TABS   = ['可招募角色','不可招募角色','關聯角色索引','角色索引清單'];
   const COUNTS = [rec.length, nrec.length, allChars.length, allChars.length];
 
   return (
     <div style={{minHeight:'100vh',background:'#F0F4FB'}}>
-      {showAddModal && <AddCharModal allChars={allChars} onClose={()=>setShowAddModal(false)}/>}
+      {showAddModal && <AddCharModal allChars={allChars} setChars={setCharacters} onClose={()=>setShowAddModal(false)}/>}
 
       <div style={{background:'linear-gradient(135deg,#1F4E79,#2E75B6)',color:'white',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'10px'}}>
         <div>
           <div style={{fontSize:'18px',fontWeight:'bold'}}>🎮 遊戲角色管理系統</div>
           <div style={{fontSize:'12px',opacity:0.8,marginTop:'3px',display:'flex',alignItems:'center',gap:'6px'}}>
             <span className={`sync-dot ${connected?'sync-on':'sync-off'}`}/>
-            {connected ? '已連接雲端・所有裝置即時同步' : '連線中斷，請重新整理'}
+            {connected?'已連接雲端・所有裝置即時同步':'連線中斷，請重新整理'}
             <span style={{opacity:0.6}}>· 共 {allChars.length} 位角色</span>
           </div>
         </div>
@@ -507,7 +535,7 @@ function App() {
       {(tab===0||tab===1)&&(
         <div className="hint-bar">
           <span>💡</span>
-          <span>點 <strong>＋</strong> 新增關聯（可招募 ＆ 不可招募都能選），點 <strong>×</strong> 刪除。操作後<strong>雙向自動同步</strong>並即時寫入雲端，任何裝置重新整理都是最新資料。</span>
+          <span>點 <strong>＋</strong> 新增關聯，支援中文搜尋，可招募和不可招募角色都會顯示。點 <strong>×</strong> 刪除關聯。所有操作即時反映並同步至雲端。</span>
         </div>
       )}
 
