@@ -92,8 +92,8 @@ const JOBS=['騎士','城堡','國王','主教','皇后','無','其他'];
 const PERSONALITIES=['古板者','調停者','膽小者','享樂者','激進者','無',''];
 
 const SEED=[
-  {name:'賽爾維斯・庫斯托',race:'人類',personality:'古板者',faction:'教會',age:'29',job:'騎士',textLink:'聖都招募角色名錄.docx',source:'recruitable',relations:['莉賽爾・庫斯托','阿爾諾・維赫']},
-  {name:'莉賽爾・庫斯托',race:'人類',personality:'調停者',faction:'教會',age:'19',job:'城堡',textLink:'聖都招募角色名錄.docx',source:'recruitable',relations:['賽爾維斯・庫斯托','阿爾諾・維赫']},
+  {name:'賽爾維斯・庫斯托',race:'人類',personality:'古板者',faction:'教會',age:'29',job:'騎士',textLink:'聖都招募角色名錄.docx',identity:'庫斯托家族',source:'recruitable',relations:['莉賽爾・庫斯托','阿爾諾・維赫']},
+  {name:'莉賽爾・庫斯托',race:'人類',personality:'調停者',faction:'教會',age:'19',job:'城堡',textLink:'聖都招募角色名錄.docx',identity:'庫斯托家族',source:'recruitable',relations:['賽爾維斯・庫斯托','阿爾諾・維赫']},
   {name:'阿爾諾・維赫',race:'人類',personality:'膽小者',faction:'教會',age:'26',job:'國王',textLink:'嚮導-阿爾諾',source:'recruitable',relations:['莉賽爾・庫斯托']},
   {name:'艾拉',race:'人類',personality:'膽小者',faction:'教會',age:'20',job:'主教',textLink:'聖都招募角色名錄.docx',source:'recruitable',relations:[]},
   {name:'伊斯卡',race:'精靈',personality:'享樂者',faction:'教會',age:'16',job:'主教',textLink:'聖都招募角色名錄.docx',source:'recruitable',relations:[]},
@@ -213,18 +213,18 @@ function computeLayout(nodes,edges,W,H){
   let pos={};
   nodes.forEach((n,i)=>{
     const a=(2*Math.PI*i)/nodes.length-Math.PI/2;
-    const r=Math.min(W,H)*0.36;
+    const r=Math.min(W,H)*0.44;
     pos[n]={x:W/2+r*Math.cos(a),y:H/2+r*Math.sin(a)};
   });
   let vel=Object.fromEntries(nodes.map(n=>[n,{x:0,y:0}]));
-  for(let t=0;t<280;t++){
+  for(let t=0;t<350;t++){
     const f=Object.fromEntries(nodes.map(n=>[n,{x:0,y:0}]));
     for(let i=0;i<nodes.length;i++){
       for(let j=i+1;j<nodes.length;j++){
         const a=nodes[i],b=nodes[j];
         const dx=pos[b].x-pos[a].x,dy=pos[b].y-pos[a].y;
         const d=Math.max(Math.sqrt(dx*dx+dy*dy),1);
-        const fo=2400/(d*d);
+        const fo=7000/(d*d);
         f[a].x-=fo*dx/d;f[a].y-=fo*dy/d;
         f[b].x+=fo*dx/d;f[b].y+=fo*dy/d;
       }
@@ -233,14 +233,14 @@ function computeLayout(nodes,edges,W,H){
       if(!pos[a]||!pos[b])return;
       const dx=pos[b].x-pos[a].x,dy=pos[b].y-pos[a].y;
       const d=Math.max(Math.sqrt(dx*dx+dy*dy),1);
-      const fo=0.04*(d-120);
+      const fo=0.03*(d-160);
       f[a].x+=fo*dx/d;f[a].y+=fo*dy/d;
       f[b].x-=fo*dx/d;f[b].y-=fo*dy/d;
     });
-    nodes.forEach(n=>{f[n].x+=0.04*(W/2-pos[n].x);f[n].y+=0.04*(H/2-pos[n].y);});
+    nodes.forEach(n=>{f[n].x+=0.02*(W/2-pos[n].x);f[n].y+=0.02*(H/2-pos[n].y);});
     nodes.forEach(n=>{
-      vel[n].x=(vel[n].x+f[n].x)*0.82;vel[n].y=(vel[n].y+f[n].y)*0.82;
-      pos[n]={x:Math.max(55,Math.min(W-55,pos[n].x+vel[n].x*0.28)),y:Math.max(45,Math.min(H-45,pos[n].y+vel[n].y*0.28))};
+      vel[n].x=(vel[n].x+f[n].x)*0.80;vel[n].y=(vel[n].y+f[n].y)*0.80;
+      pos[n]={x:Math.max(70,Math.min(W-70,pos[n].x+vel[n].x*0.25)),y:Math.max(60,Math.min(H-60,pos[n].y+vel[n].y*0.25))};
     });
   }
   return pos;
@@ -254,6 +254,8 @@ function CharFormFields({form,onChange}){
       <div className="fg" style={{marginBottom:0}}><label>種族</label><select value={form.race} onChange={e=>s('race',e.target.value)}>{RACES.map(r=><option key={r}>{r}</option>)}</select></div>
       <div className="fg" style={{marginBottom:0}}><label>派系</label><select value={form.faction} onChange={e=>s('faction',e.target.value)}>{FACTIONS.map(f=><option key={f}>{f}</option>)}</select></div>
     </div>
+    <div style={{marginBottom:'12px'}}/>
+    <div className="fg"><label>身分別</label><input value={form.identity||''} onChange={e=>s('identity',e.target.value)} placeholder="例：庫斯托家族、預言家…"/></div>
     <div style={{marginBottom:'12px'}}/>
     <div className="form-row">
       <div className="fg" style={{marginBottom:0}}><label>個性（相適性）</label><select value={form.personality} onChange={e=>s('personality',e.target.value)}>{PERSONALITIES.map(p=><option key={p} value={p}>{p||'（未填）'}</option>)}</select></div>
@@ -269,7 +271,7 @@ function CharFormFields({form,onChange}){
 
 // ── Add modal ────────────────────────────────────────────────────
 function AddCharModal({allChars,setChars,onClose}){
-  const[form,setForm]=useState({name:'',race:'人類',personality:'',faction:'教會',age:'',job:'騎士',textLink:'',source:'recruitable'});
+  const[form,setForm]=useState({name:'',race:'人類',personality:'',faction:'教會',age:'',job:'騎士',textLink:'',identity:'',source:'recruitable'});
   const[err,setErr]=useState('');
   const submit=()=>{
     const name=form.name.trim();
@@ -294,7 +296,7 @@ function AddCharModal({allChars,setChars,onClose}){
 
 // ── Edit modal ───────────────────────────────────────────────────
 function EditCharModal({char,allChars,setChars,onClose}){
-  const[form,setForm]=useState({name:char.name,race:char.race||'人類',personality:char.personality||'',faction:char.faction||'教會',age:char.age||'',job:char.job||'騎士',textLink:char.textLink||'',source:char.source||'recruitable'});
+  const[form,setForm]=useState({name:char.name,race:char.race||'人類',personality:char.personality||'',faction:char.faction||'教會',age:char.age||'',job:char.job||'騎士',textLink:char.textLink||'',identity:char.identity||'',source:char.source||'recruitable'});
   const[err,setErr]=useState('');
   const nameChanged=form.name.trim()!==char.name;
   const submit=()=>{
@@ -441,8 +443,8 @@ function NetworkGraph({allChars}){
   const onMouseMove=e=>{if(!isDragging.current)return;setTransform(t=>({...t,x:e.clientX-dragStart.current.x,y:e.clientY-dragStart.current.y}));};
   const onMouseUp=()=>{isDragging.current=false;};
 
-  const NR=20;
-  const shortName=n=>n.length>5?n.slice(0,4)+'…':n;
+  const NR=13;
+  const shortName=n=>n.length>4?n.slice(0,3)+'…':n;
 
   return(<div className="net-container">
     <div className="net-toolbar">
@@ -479,14 +481,14 @@ function NetworkGraph({allChars}){
             return(<g key={char.name} className="node-g" transform={`translate(${p.x},${p.y})`}
               style={{cursor:'default'}}
               onMouseEnter={()=>setHovered(char.name)} onMouseLeave={()=>setHovered(null)}>
-              {hl&&<circle r={NR+6} fill="none" stroke="#FBBF24" strokeWidth="3" opacity="0.8"/>}
-              <circle r={isHov?NR+3:NR} fill={fill} stroke="white" strokeWidth="2"
+              {hl&&<circle r={NR+5} fill="none" stroke="#FBBF24" strokeWidth="3" opacity="0.8"/>}
+              <circle r={isHov?NR+2:NR} fill={fill} stroke="white" strokeWidth="2"
                 opacity={inActive?1:0.12} style={{transition:'r 0.1s'}}/>
-              <text textAnchor="middle" dominantBaseline="middle" fontSize="8.5"
+              <text textAnchor="middle" dominantBaseline="middle" fontSize="8"
                 fill="white" fontWeight="bold" opacity={inActive?1:0.12} style={{pointerEvents:'none'}}>
                 {shortName(char.name)}
               </text>
-              <text textAnchor="middle" y={NR+13} fontSize="10" fill={inActive?'#1E3A5F':'#CBD5E1'}
+              <text textAnchor="middle" y={NR+14} fontSize="10" fill={inActive?'#1E3A5F':'#CBD5E1'}
                 fontWeight={isHov?'bold':'normal'} style={{pointerEvents:'none'}}>
                 {isHov&&char.name.length>5?char.name:shortName(char.name)}
               </text>
@@ -529,11 +531,12 @@ function App(){
 
   function DataTable({chars}){
     return(<div className="scroll-x"><table>
-      <thead><tr>{['名字','種族','個性','派系','年齡','職業','文本連結','關聯角色','操作'].map(h=><th key={h}>{h}</th>)}</tr></thead>
+      <thead><tr>{['名字','種族','身分別','個性','派系','年齡','職業','文本連結','關聯角色','操作'].map(h=><th key={h}>{h}</th>)}</tr></thead>
       <tbody>{chars.map(char=>(
         <tr key={char.name}>
           <td style={{fontWeight:'600',whiteSpace:'nowrap'}}>{char.name}</td>
           <td style={{textAlign:'center'}}><span style={{background:RACE_COLORS[char.race]||'#F5F5F5',padding:'2px 8px',borderRadius:'10px',fontSize:'11px'}}>{char.race}</span></td>
+          <td style={{textAlign:'center',fontSize:'12px',color:'#374151'}}>{char.identity||''}</td>
           <td style={{textAlign:'center',fontSize:'12px'}}>{char.personality}</td>
           <td style={{textAlign:'center',fontSize:'12px'}}>{char.faction}</td>
           <td style={{textAlign:'center',fontSize:'12px'}}>{char.age}</td>
@@ -550,13 +553,15 @@ function App(){
   }
 
   function RelIndex(){
+    const maxRel=Math.max(1,...allChars.map(c=>(c.relations||[]).length));
+    const cols=Array.from({length:maxRel},(_,i)=>i);
     return(<div className="scroll-x"><table>
-      <thead><tr><th>名字</th><th>來源</th>{[1,2,3,4,5,6].map(n=><th key={n}>關聯角色{n}</th>)}</tr></thead>
+      <thead><tr><th>名字</th><th>來源</th>{cols.map(i=><th key={i}>關聯角色{i+1}</th>)}</tr></thead>
       <tbody>{allChars.map(char=>(
         <tr key={char.name}>
           <td style={{fontWeight:'600',whiteSpace:'nowrap'}}>{char.name}</td>
           <td style={{textAlign:'center'}}><span className={char.source==='recruitable'?'badge-r':'badge-nr'} style={{padding:'2px 8px',borderRadius:'12px',fontWeight:'bold',fontSize:'11px'}}>{lbl(char)}</span></td>
-          {[0,1,2,3,4,5].map(i=><td key={i} style={{textAlign:'center',color:(char.relations||[])[i]?'#1F4E79':'#BFBFBF',fontSize:'12px'}}>{(char.relations||[])[i]||'—'}</td>)}
+          {cols.map(i=><td key={i} style={{textAlign:'center',color:(char.relations||[])[i]?'#1F4E79':'#BFBFBF',fontSize:'12px',whiteSpace:'nowrap'}}>{(char.relations||[])[i]||'—'}</td>)}
         </tr>
       ))}</tbody>
     </table></div>);
