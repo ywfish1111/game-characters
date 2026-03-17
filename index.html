@@ -73,6 +73,19 @@ tr:hover td{background:#E8F0FD!important;}
 .net-svg-wrap{overflow:hidden;cursor:grab;user-select:none;height:680px;position:relative;}
 .net-svg-wrap.dragging{cursor:grabbing;}
 .net-hint{position:absolute;bottom:10px;right:12px;font-size:11px;color:#9CA3AF;pointer-events:none;}
+/* Filter bar */
+.filter-bar{background:white;border:1px solid #D1D9E6;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.filter-input{border:1px solid #D1D9E6;border-radius:6px;padding:5px 10px;font-size:12px;outline:none;min-width:130px;}
+.filter-input:focus{border-color:#2E75B6;}
+.filter-select{border:1px solid #D1D9E6;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;background:white;cursor:pointer;}
+.filter-select:focus{border-color:#2E75B6;}
+.filter-label{font-size:11px;color:#6B7280;font-weight:bold;white-space:nowrap;}
+.sort-th{cursor:pointer;user-select:none;white-space:nowrap;}
+.sort-th:hover{background:#2E75B6!important;}
+.sort-arrow{margin-left:4px;font-size:10px;}
+.result-count{font-size:11px;color:#6B7280;margin-left:auto;white-space:nowrap;}
+.clear-btn{background:none;border:1px solid #D1D9E6;border-radius:6px;padding:5px 10px;font-size:11px;color:#6B7280;cursor:pointer;white-space:nowrap;}
+.clear-btn:hover{background:#F3F4F6;}
 </style>
 </head>
 <body>
@@ -529,28 +542,98 @@ function App(){
   const nrec=useMemo(()=>allChars.filter(c=>c.source==='non-recruitable'),[allChars]);
   const lbl=c=>c.source==='recruitable'?'可招募':'不可招募';
 
-  function DataTable({chars}){
-    return(<div className="scroll-x"><table>
-      <thead><tr>{['名字','種族','身分別','個性','派系','年齡','職業','文本連結','關聯角色','操作'].map(h=><th key={h}>{h}</th>)}</tr></thead>
-      <tbody>{chars.map(char=>(
-        <tr key={char.name}>
-          <td style={{fontWeight:'600',whiteSpace:'nowrap'}}>{char.name}</td>
-          <td style={{textAlign:'center'}}><span style={{background:RACE_COLORS[char.race]||'#F5F5F5',padding:'2px 8px',borderRadius:'10px',fontSize:'11px'}}>{char.race}</span></td>
-          <td style={{textAlign:'center',fontSize:'12px',color:'#374151'}}>{char.identity||''}</td>
-          <td style={{textAlign:'center',fontSize:'12px'}}>{char.personality}</td>
-          <td style={{textAlign:'center',fontSize:'12px'}}>{char.faction}</td>
-          <td style={{textAlign:'center',fontSize:'12px'}}>{char.age}</td>
-          <td style={{textAlign:'center',fontSize:'12px'}}>{char.job}</td>
-          <td style={{fontSize:'11px',color:'#2563EB',maxWidth:'120px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={char.textLink}>{char.textLink}</td>
-          <td><RelTags char={char} allChars={allChars} setChars={setCharacters} addingRel={addingRel} setAddingRel={setAddingRel}/></td>
-          <td style={{textAlign:'center',whiteSpace:'nowrap'}}>
-            <button className="icon-btn edit" title="編輯" onClick={()=>setEditChar(char)}>✏️</button>
-            <button className="icon-btn del" title="刪除" onClick={()=>setDeleteChar(char)}>🗑️</button>
-          </td>
-        </tr>
-      ))}</tbody>
-    </table></div>);
+  // ── Global filter state ──────────────────────────────────────
+  const[gSearch,setGSearch]=useState('');
+  const[gRace,setGRace]=useState('');
+  const[gFaction,setGFaction]=useState('');
+  const[gJob,setGJob]=useState('');
+  const[gPersonality,setGPersonality]=useState('');
+
+  const allRaces=useMemo(()=>[...new Set(allChars.map(c=>c.race).filter(Boolean))].sort(),[allChars]);
+  const allFactions=useMemo(()=>[...new Set(allChars.map(c=>c.faction).filter(Boolean))].sort(),[allChars]);
+  const allJobs=useMemo(()=>[...new Set(allChars.map(c=>c.job).filter(Boolean))].sort(),[allChars]);
+  const allPersonalities=useMemo(()=>[...new Set(allChars.map(c=>c.personality).filter(Boolean))].sort(),[allChars]);
+
+  const applyGlobal=useCallback((list)=>{
+    let r=list;
+    if(gSearch){
+      const s=gSearch.toLowerCase();
+      r=r.filter(c=>[c.name,c.race,c.identity,c.faction,c.personality,c.job].some(v=>v&&v.toString().toLowerCase().includes(s)));
+    }
+    if(gRace) r=r.filter(c=>c.race===gRace);
+    if(gFaction) r=r.filter(c=>c.faction===gFaction);
+    if(gJob) r=r.filter(c=>c.job===gJob);
+    if(gPersonality) r=r.filter(c=>c.personality===gPersonality);
+    return r;
+  },[gSearch,gRace,gFaction,gJob,gPersonality]);
+
+  const filteredRec=useMemo(()=>applyGlobal(rec),[rec,applyGlobal]);
+  const filteredNrec=useMemo(()=>applyGlobal(nrec),[nrec,applyGlobal]);
+  const hasFilter=gSearch||gRace||gFaction||gJob||gPersonality;
+  const clearGlobal=()=>{setGSearch('');setGRace('');setGFaction('');setGJob('');setGPersonality('');};
+
+  function DataTable({chars, globalFiltered}){
+    // chars = original list for dropdown options
+    // globalFiltered = already-filtered list from global bar
+    const[sortKey,setSortKey]=useState('');
+    const[sortDir,setSortDir]=useState('asc');
+
+    const races=useMemo(()=>[...new Set(chars.map(c=>c.race).filter(Boolean))].sort(),[chars]);
+    const factions=useMemo(()=>[...new Set(chars.map(c=>c.faction).filter(Boolean))].sort(),[chars]);
+    const jobs=useMemo(()=>[...new Set(chars.map(c=>c.job).filter(Boolean))].sort(),[chars]);
+    const personalities=useMemo(()=>[...new Set(chars.map(c=>c.personality).filter(Boolean))].sort(),[chars]);
+
+    const sorted=useMemo(()=>{
+      if(!sortKey) return globalFiltered;
+      return [...globalFiltered].sort((a,b)=>{
+        const av=a[sortKey]||'',bv=b[sortKey]||'';
+        const cmp=sortKey==='age'?(parseFloat(av)||0)-(parseFloat(bv)||0):av.toString().localeCompare(bv.toString(),'zh');
+        return sortDir==='asc'?cmp:-cmp;
+      });
+    },[globalFiltered,sortKey,sortDir]);
+
+    const handleSort=key=>{if(sortKey===key)setSortDir(d=>d==='asc'?'desc':'asc');else{setSortKey(key);setSortDir('asc');}};
+    const arrow=key=>sortKey===key?<span className="sort-arrow">{sortDir==='asc'?'▲':'▼'}</span>:<span className="sort-arrow" style={{opacity:0.3}}>⇅</span>;
+
+    const SORT_COLS=[['name','名字'],['race','種族'],['identity','身分別'],['personality','個性'],['faction','派系'],['age','年齡'],['job','職業']];
+
+    return(<div>
+      <div style={{fontSize:'12px',color:'#6B7280',marginBottom:'8px',padding:'2px 4px'}}>
+        顯示 <strong style={{color:'#1F4E79'}}>{sorted.length}</strong> / {chars.length} 位
+        {sortKey&&<span style={{marginLeft:'10px',background:'#E0ECFF',padding:'2px 8px',borderRadius:'10px',fontSize:'11px'}}>排序：{SORT_COLS.find(([k])=>k===sortKey)?.[1]} {sortDir==='asc'?'↑':'↓'} <span style={{cursor:'pointer'}} onClick={()=>{setSortKey('');setSortDir('asc');}}>✕</span></span>}
+      </div>
+      <div className="scroll-x"><table>
+        <thead><tr>
+          {SORT_COLS.map(([k,label])=>(
+            <th key={k} className="sort-th" onClick={()=>handleSort(k)}>{label}{arrow(k)}</th>
+          ))}
+          <th>文本連結</th><th>關聯角色</th><th>操作</th>
+        </tr></thead>
+        <tbody>
+          {sorted.length===0
+            ?<tr><td colSpan="10" style={{textAlign:'center',padding:'24px',color:'#9CA3AF'}}>沒有符合條件的角色</td></tr>
+            :sorted.map(char=>(
+            <tr key={char.name}>
+              <td style={{fontWeight:'600',whiteSpace:'nowrap'}}>{char.name}</td>
+              <td style={{textAlign:'center'}}><span style={{background:RACE_COLORS[char.race]||'#F5F5F5',padding:'2px 8px',borderRadius:'10px',fontSize:'11px'}}>{char.race}</span></td>
+              <td style={{textAlign:'center',fontSize:'12px',color:'#374151'}}>{char.identity||''}</td>
+              <td style={{textAlign:'center',fontSize:'12px'}}>{char.personality}</td>
+              <td style={{textAlign:'center',fontSize:'12px'}}>{char.faction}</td>
+              <td style={{textAlign:'center',fontSize:'12px'}}>{char.age}</td>
+              <td style={{textAlign:'center',fontSize:'12px'}}>{char.job}</td>
+              <td style={{fontSize:'11px',color:'#2563EB',maxWidth:'120px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={char.textLink}>{char.textLink}</td>
+              <td><RelTags char={char} allChars={allChars} setChars={setCharacters} addingRel={addingRel} setAddingRel={setAddingRel}/></td>
+              <td style={{textAlign:'center',whiteSpace:'nowrap'}}>
+                <button className="icon-btn edit" title="編輯" onClick={()=>setEditChar(char)}>✏️</button>
+                <button className="icon-btn del" title="刪除" onClick={()=>setDeleteChar(char)}>🗑️</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table></div>
+    </div>);
   }
+
 
   function RelIndex(){
     const maxRel=Math.max(1,...allChars.map(c=>(c.relations||[]).length));
@@ -597,11 +680,11 @@ function App(){
       ))}
     </div>
 
-    {(tab===0||tab===1)&&<div className="hint-bar"><span>💡</span><span>點 <strong>✏️</strong> 編輯角色資料，點 <strong>🗑️</strong> 刪除（刪除前會再次確認）。關聯欄點 <strong>＋</strong> 新增、<strong>×</strong> 刪除，支援中文搜尋，雙向自動同步。</span></div>}
+    {(tab===0||tab===1)&&<div className="hint-bar"><span>💡</span><span>點欄位標題可排序（種族/身分別/個性/派系/年齡/職業）。點 <strong>✏️</strong> 編輯，<strong>🗑️</strong> 刪除，關聯欄 <strong>＋</strong> 新增、<strong>×</strong> 刪除，雙向自動同步。</span></div>}
 
     <div style={{padding:'16px'}}>
-      {tab===0&&<DataTable chars={rec}/>}
-      {tab===1&&<DataTable chars={nrec}/>}
+      {tab===0&&<DataTable chars={rec} globalFiltered={filteredRec}/>}
+      {tab===1&&<DataTable chars={nrec} globalFiltered={filteredNrec}/>}
       {tab===2&&<RelIndex/>}
       {tab===3&&<NetworkGraph allChars={allChars}/>}
     </div>
