@@ -672,6 +672,28 @@ function App(){
       <button className="new-char-btn" onClick={()=>setShowAdd(true)}>＋ 新增角色</button>
     </div>
 
+    {/* ── Global Filter Bar ── */}
+    <div style={{background:'#F0F6FF',borderBottom:'1px solid #BFDBFE',padding:'10px 16px',display:'flex',flexWrap:'wrap',gap:'8px',alignItems:'center'}}>
+      <span style={{fontSize:'12px',fontWeight:'bold',color:'#1F4E79',whiteSpace:'nowrap'}}>🔍 搜尋篩選</span>
+      <input className="filter-input" style={{minWidth:'200px'}} value={gSearch} onChange={e=>setGSearch(e.target.value)} placeholder="名字、種族、身分別、派系、個性、職業…"/>
+      <select className="filter-select" value={gRace} onChange={e=>setGRace(e.target.value)}>
+        <option value="">所有種族</option>{allRaces.map(r=><option key={r}>{r}</option>)}
+      </select>
+      <select className="filter-select" value={gFaction} onChange={e=>setGFaction(e.target.value)}>
+        <option value="">所有派系</option>{allFactions.map(f=><option key={f}>{f}</option>)}
+      </select>
+      <select className="filter-select" value={gJob} onChange={e=>setGJob(e.target.value)}>
+        <option value="">所有職業</option>{allJobs.map(j=><option key={j}>{j}</option>)}
+      </select>
+      <select className="filter-select" value={gPersonality} onChange={e=>setGPersonality(e.target.value)}>
+        <option value="">所有個性</option>{allPersonalities.map(p=><option key={p}>{p}</option>)}
+      </select>
+      {hasFilter&&<button className="clear-btn" onClick={clearGlobal}>✕ 清除</button>}
+      {hasFilter&&<span style={{fontSize:'11px',color:'#1E40AF',background:'#DBEAFE',padding:'2px 8px',borderRadius:'10px'}}>
+        找到 {filteredRec.length+filteredNrec.length} 位（可招募 {filteredRec.length}・不可招募 {filteredNrec.length}）
+      </span>}
+    </div>
+
     <div style={{background:'white',borderBottom:'2px solid #E5E7EB',display:'flex',overflowX:'auto'}}>
       {TABS.map((label,i)=>(
         <button key={i} className={`tab-btn ${tab===i?'active':''}`} onClick={()=>setTab(i)}>
