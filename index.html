@@ -10,85 +10,88 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: Arial, sans-serif; background: #F0F4FB; }
-.scroll-x { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; min-width: 700px; }
-th, td { border: 1px solid #D1D9E6; padding: 7px 10px; font-size: 13px; }
-th { background: #1F4E79; color: white; text-align: center; white-space: nowrap; font-size: 12px; }
-tr:nth-child(even) td { background: #F2F7FF; }
-tr:nth-child(odd) td { background: #FFFFFF; }
-tr:hover td { background: #E8F0FD !important; }
-.tag { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:20px; font-size:11px; background:#E0ECFF; border:1px solid #6BA3D6; color:#1F4E79; margin:2px; }
-.tag-del { background:none; border:none; color:#C0392B; cursor:pointer; font-size:14px; line-height:1; padding:0 2px; font-weight:bold; }
-.tag-del:hover { color:#E74C3C; }
-.add-btn { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px; font-size:11px; background:#E2EFDA; border:1px solid #70AD47; color:#375623; cursor:pointer; margin:2px; font-weight:bold; }
-.add-btn:hover { background:#D5E8CC; }
-.tab-btn { padding:10px 16px; border:none; background:none; cursor:pointer; font-size:13px; border-bottom:3px solid transparent; color:#6B7280; white-space:nowrap; }
-.tab-btn.active { color:#1F4E79; border-bottom-color:#1F4E79; font-weight:bold; }
-.dropdown { position:absolute; z-index:9999; background:white; border:1px solid #C0C8D8; border-radius:6px; box-shadow:0 4px 16px rgba(0,0,0,0.15); min-width:200px; max-height:220px; overflow-y:auto; top:100%; left:0; margin-top:2px; }
-.dd-item { padding:8px 12px; cursor:pointer; font-size:13px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
-.dd-item:hover { background:#E8F0FD; }
-.dd-empty { padding:10px 12px; font-size:12px; color:#9CA3AF; text-align:center; }
-.badge-r { font-size:10px; padding:2px 7px; border-radius:10px; background:#E2EFDA; color:#375623; white-space:nowrap; }
-.badge-nr { font-size:10px; padding:2px 7px; border-radius:10px; background:#FCE4D6; color:#833C00; white-space:nowrap; }
-.group-hdr { padding:8px 14px; font-weight:bold; font-size:12px; color:#1F4E79; border-left:4px solid #2E75B6; display:flex; align-items:center; gap:8px; }
-.rel-wrap { display:flex; flex-wrap:wrap; align-items:center; min-width:150px; }
-.rel-input { border:1px solid #2E75B6; border-radius:6px; padding:4px 10px; font-size:13px; width:140px; outline:none; background:white; }
-.rel-input:focus { border-color:#1F4E79; box-shadow:0 0 0 2px #BFDBFE; }
-.hint-bar { background:#EFF6FF; border-bottom:1px solid #BFDBFE; padding:8px 20px; font-size:12px; color:#1E40AF; display:flex; align-items:flex-start; gap:6px; }
-.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; display:flex; align-items:center; justify-content:center; padding:16px; }
-.modal { background:white; border-radius:10px; padding:24px; width:100%; max-width:520px; box-shadow:0 8px 32px rgba(0,0,0,0.2); max-height:90vh; overflow-y:auto; }
-.modal h2 { font-size:16px; color:#1F4E79; margin-bottom:18px; }
-.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
-.form-group { display:flex; flex-direction:column; gap:4px; margin-bottom:12px; }
-.form-group label { font-size:12px; color:#374151; font-weight:bold; }
-.form-group input, .form-group select { border:1px solid #D1D9E6; border-radius:6px; padding:7px 10px; font-size:13px; outline:none; }
-.form-group input:focus, .form-group select:focus { border-color:#2E75B6; }
-.required { color:#E53E3E; }
-.btn-primary { background:#1F4E79; color:white; border:none; border-radius:6px; padding:9px 20px; font-size:13px; cursor:pointer; font-weight:bold; }
-.btn-primary:hover { background:#2E75B6; }
-.btn-secondary { background:#F3F4F6; color:#374151; border:1px solid #D1D9E6; border-radius:6px; padding:9px 20px; font-size:13px; cursor:pointer; }
-.btn-secondary:hover { background:#E5E7EB; }
-.new-char-btn { display:flex; align-items:center; gap:6px; background:white; color:#1F4E79; border:2px solid white; border-radius:6px; padding:8px 16px; font-size:13px; cursor:pointer; font-weight:bold; }
-.new-char-btn:hover { background:#E8F0FD; }
-.error-msg { color:#E53E3E; font-size:11px; margin-top:2px; }
-.sync-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:5px; }
-.sync-on { background:#4ADE80; box-shadow:0 0 6px #4ADE80; }
-.sync-off { background:#FCA5A5; }
-.loading-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; gap:16px; color:#1F4E79; }
-.spinner { width:40px; height:40px; border:4px solid #BFDBFE; border-top-color:#1F4E79; border-radius:50%; animation:spin 0.8s linear infinite; }
-@keyframes spin { to { transform:rotate(360deg); } }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;background:#F0F4FB;}
+.scroll-x{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;min-width:700px;}
+th,td{border:1px solid #D1D9E6;padding:6px 10px;font-size:13px;}
+th{background:#1F4E79;color:white;text-align:center;white-space:nowrap;font-size:12px;}
+tr:nth-child(even) td{background:#F2F7FF;}
+tr:nth-child(odd) td{background:#FFFFFF;}
+tr:hover td{background:#E8F0FD!important;}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;background:#E0ECFF;border:1px solid #6BA3D6;color:#1F4E79;margin:2px;}
+.tag-del{background:none;border:none;color:#C0392B;cursor:pointer;font-size:14px;line-height:1;padding:0 2px;font-weight:bold;}
+.add-btn{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;background:#E2EFDA;border:1px solid #70AD47;color:#375623;cursor:pointer;margin:2px;font-weight:bold;}
+.icon-btn{background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:4px;font-size:14px;line-height:1;}
+.icon-btn:hover{background:#E5E7EB;}
+.icon-btn.edit:hover{background:#DBEAFE;color:#1D4ED8;}
+.icon-btn.del:hover{background:#FEE2E2;color:#DC2626;}
+.tab-btn{padding:10px 16px;border:none;background:none;cursor:pointer;font-size:13px;border-bottom:3px solid transparent;color:#6B7280;white-space:nowrap;}
+.tab-btn.active{color:#1F4E79;border-bottom-color:#1F4E79;font-weight:bold;}
+.dropdown{position:absolute;z-index:9999;background:white;border:1px solid #C0C8D8;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,0.15);min-width:200px;max-height:220px;overflow-y:auto;top:100%;left:0;margin-top:2px;}
+.dd-item{padding:8px 12px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.dd-item:hover{background:#E8F0FD;}
+.dd-empty{padding:10px 12px;font-size:12px;color:#9CA3AF;text-align:center;}
+.badge-r{font-size:10px;padding:2px 7px;border-radius:10px;background:#E2EFDA;color:#375623;white-space:nowrap;}
+.badge-nr{font-size:10px;padding:2px 7px;border-radius:10px;background:#FCE4D6;color:#833C00;white-space:nowrap;}
+.rel-wrap{display:flex;flex-wrap:wrap;align-items:center;min-width:150px;}
+.rel-input{border:1px solid #2E75B6;border-radius:6px;padding:4px 10px;font-size:13px;width:140px;outline:none;}
+.rel-input:focus{border-color:#1F4E79;box-shadow:0 0 0 2px #BFDBFE;}
+.hint-bar{background:#EFF6FF;border-bottom:1px solid #BFDBFE;padding:8px 20px;font-size:12px;color:#1E40AF;display:flex;align-items:flex-start;gap:6px;}
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal{background:white;border-radius:10px;padding:24px;width:100%;max-width:520px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;}
+.modal h2{font-size:16px;color:#1F4E79;margin-bottom:18px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.fg label{font-size:12px;color:#374151;font-weight:bold;}
+.fg input,.fg select{border:1px solid #D1D9E6;border-radius:6px;padding:7px 10px;font-size:13px;outline:none;}
+.fg input:focus,.fg select:focus{border-color:#2E75B6;}
+.fg input:disabled{background:#F3F4F6;color:#9CA3AF;}
+.required{color:#E53E3E;}
+.btn-primary{background:#1F4E79;color:white;border:none;border-radius:6px;padding:9px 20px;font-size:13px;cursor:pointer;font-weight:bold;}
+.btn-primary:hover{background:#2E75B6;}
+.btn-danger{background:#DC2626;color:white;border:none;border-radius:6px;padding:9px 20px;font-size:13px;cursor:pointer;font-weight:bold;}
+.btn-danger:hover{background:#B91C1C;}
+.btn-secondary{background:#F3F4F6;color:#374151;border:1px solid #D1D9E6;border-radius:6px;padding:9px 20px;font-size:13px;cursor:pointer;}
+.btn-secondary:hover{background:#E5E7EB;}
+.new-char-btn{display:flex;align-items:center;gap:6px;background:white;color:#1F4E79;border:2px solid white;border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer;font-weight:bold;}
+.new-char-btn:hover{background:#E8F0FD;}
+.err{color:#E53E3E;font-size:11px;margin-top:2px;}
+.warn-box{background:#FEF3C7;border:1px solid #FCD34D;border-radius:6px;padding:8px 12px;font-size:11px;color:#92400E;margin-top:4px;}
+.sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;}
+.sync-on{background:#4ADE80;box-shadow:0 0 6px #4ADE80;}
+.sync-off{background:#FCA5A5;}
+.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;color:#1F4E79;}
+.spinner{width:40px;height:40px;border:4px solid #BFDBFE;border-top-color:#1F4E79;border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+/* Network */
+.net-container{background:white;border-radius:8px;border:1px solid #D1D9E6;overflow:hidden;}
+.net-toolbar{padding:12px 16px;border-bottom:1px solid #E5E7EB;display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.net-search{border:1px solid #D1D9E6;border-radius:6px;padding:6px 12px;font-size:13px;outline:none;width:180px;}
+.net-search:focus{border-color:#2E75B6;}
+.net-svg-wrap{overflow:hidden;cursor:grab;user-select:none;height:680px;position:relative;}
+.net-svg-wrap.dragging{cursor:grabbing;}
+.net-hint{position:absolute;bottom:10px;right:12px;font-size:11px;color:#9CA3AF;pointer-events:none;}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDs_0rnJu2t4fyEGQO8yd8VNocX5NEDWK4",
-  authDomain: "game-characters-5eba7.firebaseapp.com",
-  projectId: "game-characters-5eba7",
-  storageBucket: "game-characters-5eba7.firebasestorage.app",
-  messagingSenderId: "602475714580",
-  appId: "1:602475714580:web:d890cf85c98cfabe422f01"
-};
+const firebaseConfig={apiKey:"AIzaSyDs_0rnJu2t4fyEGQO8yd8VNocX5NEDWK4",authDomain:"game-characters-5eba7.firebaseapp.com",projectId:"game-characters-5eba7",storageBucket:"game-characters-5eba7.firebasestorage.app",messagingSenderId:"602475714580",appId:"1:602475714580:web:d890cf85c98cfabe422f01"};
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db=firebase.firestore();
 </script>
 <script type="text/babel">
-const { useState, useMemo, useRef, useEffect, useCallback } = React;
+const {useState,useMemo,useRef,useEffect,useCallback}=React;
 
-const RACE_COLORS = {
-  '人類':'#EBF5FB','精靈':'#EAFAF1','龍人':'#FEF5E7','矮人':'#F2F3F4',
-  '鳥人':'#E8F6FD','亞人':'#F3E8FF','魔女':'#FDE8F4','魔物':'#FFF8E1',
-  '方舟':'#EAF0FB','魔鬼':'#FDEDEC','神':'#FEFCE8'
-};
-const RACES       = ['人類','精靈','龍人','矮人','鳥人','亞人','魔女','魔物','方舟','魔鬼','神','其他'];
-const FACTIONS    = ['教會','中立','亞人','無','其他'];
-const JOBS        = ['騎士','城堡','國王','主教','皇后','無','其他'];
-const PERSONALITIES = ['古板者','調停者','膽小者','享樂者','激進者','無',''];
+const RACE_COLORS={'人類':'#EBF5FB','精靈':'#EAFAF1','龍人':'#FEF5E7','矮人':'#F2F3F4','鳥人':'#E8F6FD','亞人':'#F3E8FF','魔女':'#FDE8F4','魔物':'#FFF8E1','方舟':'#EAF0FB','魔鬼':'#FDEDEC','神':'#FEFCE8'};
+const RACES=['人類','精靈','龍人','矮人','鳥人','亞人','魔女','魔物','方舟','魔鬼','神','其他'];
+const FACTIONS=['教會','中立','亞人','無','其他'];
+const JOBS=['騎士','城堡','國王','主教','皇后','無','其他'];
+const PERSONALITIES=['古板者','調停者','膽小者','享樂者','激進者','無',''];
 
-const SEED = [
+const SEED=[
   {name:'賽爾維斯・庫斯托',race:'人類',personality:'古板者',faction:'教會',age:'29',job:'騎士',textLink:'聖都招募角色名錄.docx',source:'recruitable',relations:['莉賽爾・庫斯托','阿爾諾・維赫']},
   {name:'莉賽爾・庫斯托',race:'人類',personality:'調停者',faction:'教會',age:'19',job:'城堡',textLink:'聖都招募角色名錄.docx',source:'recruitable',relations:['賽爾維斯・庫斯托','阿爾諾・維赫']},
   {name:'阿爾諾・維赫',race:'人類',personality:'膽小者',faction:'教會',age:'26',job:'國王',textLink:'嚮導-阿爾諾',source:'recruitable',relations:['莉賽爾・庫斯托']},
@@ -133,420 +136,471 @@ const SEED = [
   {name:'娜圖拉',race:'精靈',personality:'無',faction:'教會',age:'',job:'無',textLink:'神選者的紀錄檔案 的副本',source:'non-recruitable',relations:[]},
 ];
 
-async function seedIfEmpty() {
-  const snap = await db.collection('characters').limit(1).get();
-  if (!snap.empty) return;
-  const batch = db.batch();
-  SEED.forEach(c => batch.set(db.collection('characters').doc(c.name), c));
-  await batch.commit();
+// ── Firebase helpers ─────────────────────────────────────────────
+async function seedIfEmpty(){
+  const s=await db.collection('characters').limit(1).get();
+  if(!s.empty)return;
+  const b=db.batch();
+  SEED.forEach(c=>b.set(db.collection('characters').doc(c.name),c));
+  await b.commit();
 }
 
-// ── Optimistic relation update ─────────────────────────────────
-async function fsUpdateRelations(nameA, nameB, action, setChars) {
-  // Optimistic update first
-  setChars(prev => {
-    const next = prev.map(c => {
-      if (c.name === nameA || c.name === nameB) {
-        const other = c.name === nameA ? nameB : nameA;
-        let rels = c.relations || [];
-        if (action === 'add') {
-          rels = rels.includes(other) ? rels : [...rels, other];
-        } else {
-          rels = rels.filter(r => r !== other);
-        }
-        return {...c, relations: rels};
-      }
-      return c;
-    });
-    return next;
-  });
-  // Background sync
-  try {
-    const [snapA, snapB] = await Promise.all([
-      db.collection('characters').doc(nameA).get(),
-      db.collection('characters').doc(nameB).get(),
-    ]);
-    if (!snapA.exists || !snapB.exists) return;
-    let relA = snapA.data().relations || [];
-    let relB = snapB.data().relations || [];
-    if (action === 'add') {
-      if (!relA.includes(nameB)) relA = [...relA, nameB];
-      if (!relB.includes(nameA)) relB = [...relB, nameA];
-    } else {
-      relA = relA.filter(r => r !== nameB);
-      relB = relB.filter(r => r !== nameA);
+async function fsUpdateRelations(nameA,nameB,action,setChars){
+  setChars(prev=>prev.map(c=>{
+    if(c.name===nameA||c.name===nameB){
+      const other=c.name===nameA?nameB:nameA;
+      let rels=c.relations||[];
+      rels=action==='add'?(rels.includes(other)?rels:[...rels,other]):rels.filter(r=>r!==other);
+      return{...c,relations:rels};
     }
-    const batch = db.batch();
-    batch.update(db.collection('characters').doc(nameA), {relations: relA});
-    batch.update(db.collection('characters').doc(nameB), {relations: relB});
-    await batch.commit();
-  } catch(e) { console.error('Sync error', e); }
+    return c;
+  }));
+  try{
+    const[sA,sB]=await Promise.all([db.collection('characters').doc(nameA).get(),db.collection('characters').doc(nameB).get()]);
+    if(!sA.exists||!sB.exists)return;
+    let rA=sA.data().relations||[],rB=sB.data().relations||[];
+    if(action==='add'){if(!rA.includes(nameB))rA=[...rA,nameB];if(!rB.includes(nameA))rB=[...rB,nameA];}
+    else{rA=rA.filter(r=>r!==nameB);rB=rB.filter(r=>r!==nameA);}
+    const b=db.batch();
+    b.update(db.collection('characters').doc(nameA),{relations:rA});
+    b.update(db.collection('characters').doc(nameB),{relations:rB});
+    await b.commit();
+  }catch(e){console.error(e);}
 }
 
-// ── Add Character Modal ────────────────────────────────────────
-function AddCharModal({ allChars, setChars, onClose }) {
-  const [form, setForm] = useState({name:'',race:'人類',personality:'',faction:'教會',age:'',job:'騎士',textLink:'',source:'recruitable'});
-  const [error, setError] = useState('');
-  const set = (k,v) => setForm(f=>({...f,[k]:v}));
-
-  const handleSubmit = async () => {
-    const name = form.name.trim();
-    if (!name) { setError('請輸入角色名稱'); return; }
-    if (allChars.some(c=>c.name===name)) { setError('此角色名稱已存在'); return; }
-    const newChar = {...form, name, relations:[]};
-    // Optimistic: add to local state immediately
-    setChars(prev => [...prev, newChar]);
-    onClose();
-    // Background write
-    db.collection('characters').doc(name).set(newChar).catch(console.error);
-  };
-
-  return (
-    <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="modal">
-        <h2>✨ 新增角色</h2>
-        <div className="form-group">
-          <label>角色名稱 <span className="required">*</span></label>
-          <input value={form.name} onChange={e=>{set('name',e.target.value);setError('');}} placeholder="輸入角色名稱" autoFocus />
-          {error && <div className="error-msg">{error}</div>}
-        </div>
-        <div className="form-group">
-          <label>招募狀態 <span className="required">*</span></label>
-          <select value={form.source} onChange={e=>set('source',e.target.value)}>
-            <option value="recruitable">可招募</option>
-            <option value="non-recruitable">不可招募</option>
-          </select>
-        </div>
-        <div className="form-row">
-          <div className="form-group" style={{marginBottom:0}}>
-            <label>種族</label>
-            <select value={form.race} onChange={e=>set('race',e.target.value)}>
-              {RACES.map(r=><option key={r}>{r}</option>)}
-            </select>
-          </div>
-          <div className="form-group" style={{marginBottom:0}}>
-            <label>派系</label>
-            <select value={form.faction} onChange={e=>set('faction',e.target.value)}>
-              {FACTIONS.map(f=><option key={f}>{f}</option>)}
-            </select>
-          </div>
-        </div>
-        <div style={{marginBottom:'12px'}}/>
-        <div className="form-row">
-          <div className="form-group" style={{marginBottom:0}}>
-            <label>個性（相適性）</label>
-            <select value={form.personality} onChange={e=>set('personality',e.target.value)}>
-              {PERSONALITIES.map(p=><option key={p} value={p}>{p||'（未填）'}</option>)}
-            </select>
-          </div>
-          <div className="form-group" style={{marginBottom:0}}>
-            <label>年齡</label>
-            <input value={form.age} onChange={e=>set('age',e.target.value)} placeholder="例：25 或 無" />
-          </div>
-        </div>
-        <div style={{marginBottom:'12px'}}/>
-        <div className="form-row">
-          <div className="form-group" style={{marginBottom:0}}>
-            <label>職業（棋種）</label>
-            <select value={form.job} onChange={e=>set('job',e.target.value)}>
-              {JOBS.map(j=><option key={j}>{j}</option>)}
-            </select>
-          </div>
-          <div className="form-group" style={{marginBottom:0}}>
-            <label>角色設定文本連結</label>
-            <input value={form.textLink} onChange={e=>set('textLink',e.target.value)} placeholder="文件名稱" />
-          </div>
-        </div>
-        <div style={{marginTop:'20px',display:'flex',gap:'10px',justifyContent:'flex-end'}}>
-          <button className="btn-secondary" onClick={onClose}>取消</button>
-          <button className="btn-primary" onClick={handleSubmit}>✅ 新增角色</button>
-        </div>
-      </div>
-    </div>
-  );
+async function fsAddChar(char,setChars){
+  setChars(prev=>[...prev,char]);
+  db.collection('characters').doc(char.name).set(char).catch(console.error);
 }
 
-// ── RelTags: 修正中文輸入法 + 顯示全部角色 ──────────────────────
-function RelTags({ char, allChars, setChars, addingRel, setAddingRel }) {
-  const [search, setSearch] = useState('');
-  const [composing, setComposing] = useState(false); // 追蹤中文組字狀態
-  const inputRef = useRef(null);
-  const wrapRef = useRef(null);
-  const isOpen = addingRel === char.name;
+async function fsUpdateChar(oldName,newName,updates,setChars){
+  const nameChanged=oldName!==newName;
+  setChars(prev=>prev.map(c=>{
+    if(c.name===oldName)return{...c,...updates,name:newName};
+    if(nameChanged)return{...c,relations:(c.relations||[]).map(r=>r===oldName?newName:r)};
+    return c;
+  }));
+  try{
+    if(nameChanged){
+      const snap=await db.collection('characters').doc(oldName).get();
+      if(!snap.exists)return;
+      const b=db.batch();
+      b.delete(db.collection('characters').doc(oldName));
+      b.set(db.collection('characters').doc(newName),{...snap.data(),...updates,name:newName});
+      const relSnap=await db.collection('characters').where('relations','array-contains',oldName).get();
+      relSnap.docs.forEach(d=>{if(d.id!==oldName)b.update(d.ref,{relations:d.data().relations.map(r=>r===oldName?newName:r)});});
+      await b.commit();
+    }else{
+      await db.collection('characters').doc(oldName).update(updates);
+    }
+  }catch(e){console.error(e);}
+}
 
-  useEffect(() => {
-    if (isOpen && inputRef.current) inputRef.current.focus();
-  }, [isOpen]);
+async function fsDeleteChar(name,setChars){
+  setChars(prev=>prev.filter(c=>c.name!==name).map(c=>({...c,relations:(c.relations||[]).filter(r=>r!==name)})));
+  try{
+    const b=db.batch();
+    b.delete(db.collection('characters').doc(name));
+    const s=await db.collection('characters').where('relations','array-contains',name).get();
+    s.docs.forEach(d=>b.update(d.ref,{relations:d.data().relations.filter(r=>r!==name)}));
+    await b.commit();
+  }catch(e){console.error(e);}
+}
 
-  useEffect(() => {
-    if (!isOpen) setSearch('');
-  }, [isOpen]);
-
-  useEffect(() => {
-    const handler = e => {
-      if (isOpen && wrapRef.current && !wrapRef.current.contains(e.target)) {
-        setAddingRel(null);
+// ── Force layout ─────────────────────────────────────────────────
+function computeLayout(nodes,edges,W,H){
+  if(!nodes.length)return{};
+  let pos={};
+  nodes.forEach((n,i)=>{
+    const a=(2*Math.PI*i)/nodes.length-Math.PI/2;
+    const r=Math.min(W,H)*0.36;
+    pos[n]={x:W/2+r*Math.cos(a),y:H/2+r*Math.sin(a)};
+  });
+  let vel=Object.fromEntries(nodes.map(n=>[n,{x:0,y:0}]));
+  for(let t=0;t<280;t++){
+    const f=Object.fromEntries(nodes.map(n=>[n,{x:0,y:0}]));
+    for(let i=0;i<nodes.length;i++){
+      for(let j=i+1;j<nodes.length;j++){
+        const a=nodes[i],b=nodes[j];
+        const dx=pos[b].x-pos[a].x,dy=pos[b].y-pos[a].y;
+        const d=Math.max(Math.sqrt(dx*dx+dy*dy),1);
+        const fo=2400/(d*d);
+        f[a].x-=fo*dx/d;f[a].y-=fo*dy/d;
+        f[b].x+=fo*dx/d;f[b].y+=fo*dy/d;
       }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [isOpen]);
-
-  // 搜尋時使用已組字完成的文字（不受組字過程干擾）
-  const suggestions = useMemo(() => {
-    const existRels = char.relations || [];
-    return allChars
-      .filter(c => c.name !== char.name && !existRels.includes(c.name))
-      .filter(c => !search || c.name.includes(search))
-      .sort((a,b) => {
-        // 可招募排前面，同類依名字排序
-        if (a.source !== b.source) return a.source === 'recruitable' ? -1 : 1;
-        return a.name.localeCompare(b.name, 'zh');
-      });
-  }, [char, allChars, search]);
-
-  const handleAdd = (relName) => {
-    setAddingRel(null);
-    fsUpdateRelations(char.name, relName, 'add', setChars);
-  };
-
-  const handleRemove = (relName) => {
-    fsUpdateRelations(char.name, relName, 'remove', setChars);
-  };
-
-  return (
-    <div className="rel-wrap" ref={isOpen ? wrapRef : null}>
-      {(char.relations||[]).map(rel=>(
-        <span key={rel} className="tag">
-          {rel}
-          <button className="tag-del" onClick={()=>handleRemove(rel)}>×</button>
-        </span>
-      ))}
-      {isOpen ? (
-        <div style={{position:'relative'}}>
-          <input
-            ref={inputRef}
-            className="rel-input"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            // 中文輸入法：組字中不篩選，組字完成才更新
-            onCompositionStart={() => setComposing(true)}
-            onCompositionEnd={e => { setComposing(false); setSearch(e.target.value); }}
-            onKeyDown={e => {
-              if (e.key==='Escape') { setAddingRel(null); }
-              // 組字中不觸發 Enter 選取
-              if (e.key==='Enter' && !composing && suggestions.length>0) handleAdd(suggestions[0].name);
-            }}
-            placeholder="搜尋角色名稱…"
-          />
-          <div className="dropdown">
-            {suggestions.length === 0
-              ? <div className="dd-empty">找不到符合的角色</div>
-              : suggestions.map(s=>(
-                  <div key={s.name} className="dd-item"
-                    onMouseDown={e=>{ e.preventDefault(); handleAdd(s.name); }}>
-                    <span>{s.name}</span>
-                    <span className={s.source==='recruitable'?'badge-r':'badge-nr'}>
-                      {s.source==='recruitable'?'可招募':'不可招募'}
-                    </span>
-                  </div>
-                ))
-            }
-          </div>
-        </div>
-      ) : (
-        <button className="add-btn" onClick={()=>setAddingRel(char.name)}>＋</button>
-      )}
-    </div>
-  );
+    }
+    edges.forEach(([a,b])=>{
+      if(!pos[a]||!pos[b])return;
+      const dx=pos[b].x-pos[a].x,dy=pos[b].y-pos[a].y;
+      const d=Math.max(Math.sqrt(dx*dx+dy*dy),1);
+      const fo=0.04*(d-120);
+      f[a].x+=fo*dx/d;f[a].y+=fo*dy/d;
+      f[b].x-=fo*dx/d;f[b].y-=fo*dy/d;
+    });
+    nodes.forEach(n=>{f[n].x+=0.04*(W/2-pos[n].x);f[n].y+=0.04*(H/2-pos[n].y);});
+    nodes.forEach(n=>{
+      vel[n].x=(vel[n].x+f[n].x)*0.82;vel[n].y=(vel[n].y+f[n].y)*0.82;
+      pos[n]={x:Math.max(55,Math.min(W-55,pos[n].x+vel[n].x*0.28)),y:Math.max(45,Math.min(H-45,pos[n].y+vel[n].y*0.28))};
+    });
+  }
+  return pos;
 }
 
-// ── Main App ───────────────────────────────────────────────────
-function App() {
-  const [characters, setCharacters] = useState(null);
-  const [connected, setConnected]   = useState(false);
-  const [tab, setTab]               = useState(0);
-  const [addingRel, setAddingRel]   = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
+// ── Shared form fields ───────────────────────────────────────────
+function CharFormFields({form,onChange}){
+  const s=(k,v)=>onChange({...form,[k]:v});
+  return(<>
+    <div className="form-row">
+      <div className="fg" style={{marginBottom:0}}><label>種族</label><select value={form.race} onChange={e=>s('race',e.target.value)}>{RACES.map(r=><option key={r}>{r}</option>)}</select></div>
+      <div className="fg" style={{marginBottom:0}}><label>派系</label><select value={form.faction} onChange={e=>s('faction',e.target.value)}>{FACTIONS.map(f=><option key={f}>{f}</option>)}</select></div>
+    </div>
+    <div style={{marginBottom:'12px'}}/>
+    <div className="form-row">
+      <div className="fg" style={{marginBottom:0}}><label>個性（相適性）</label><select value={form.personality} onChange={e=>s('personality',e.target.value)}>{PERSONALITIES.map(p=><option key={p} value={p}>{p||'（未填）'}</option>)}</select></div>
+      <div className="fg" style={{marginBottom:0}}><label>年齡</label><input value={form.age} onChange={e=>s('age',e.target.value)} placeholder="例：25 或 無"/></div>
+    </div>
+    <div style={{marginBottom:'12px'}}/>
+    <div className="form-row">
+      <div className="fg" style={{marginBottom:0}}><label>職業（棋種）</label><select value={form.job} onChange={e=>s('job',e.target.value)}>{JOBS.map(j=><option key={j}>{j}</option>)}</select></div>
+      <div className="fg" style={{marginBottom:0}}><label>角色設定文本連結</label><input value={form.textLink} onChange={e=>s('textLink',e.target.value)} placeholder="文件名稱"/></div>
+    </div>
+  </>);
+}
 
-  useEffect(() => {
-    seedIfEmpty().catch(console.error);
-    const unsub = db.collection('characters').onSnapshot(
-      snap => { setCharacters(snap.docs.map(d=>d.data())); setConnected(true); },
-      err  => { console.error(err); setConnected(false); }
-    );
-    return unsub;
-  }, []);
-
-  const allChars = useMemo(() => characters || [], [characters]);
-  const rec  = useMemo(() => allChars.filter(c=>c.source==='recruitable'), [allChars]);
-  const nrec = useMemo(() => allChars.filter(c=>c.source==='non-recruitable'), [allChars]);
-
-  const charIndexGroups = useMemo(() => {
-    const sorted = [...allChars].sort((a,b)=>{
-      if(a.race!==b.race) return a.race.localeCompare(b.race,'zh');
-      if(a.faction!==b.faction) return a.faction.localeCompare(b.faction,'zh');
-      return a.name.localeCompare(b.name,'zh');
-    });
-    const g = {};
-    sorted.forEach(c=>{ if(!g[c.race]) g[c.race]=[]; g[c.race].push(c); });
-    return g;
-  }, [allChars]);
-
-  const label = c => c.source==='recruitable'?'可招募':'不可招募';
-
-  function DataTable({chars}) {
-    return (
-      <div className="scroll-x">
-        <table>
-          <thead>
-            <tr>{['名字','種族','個性（相適性）','派系','年齡','職業（棋種）','角色設定文本連結','關聯角色'].map(h=><th key={h}>{h}</th>)}</tr>
-          </thead>
-          <tbody>
-            {chars.map(char=>(
-              <tr key={char.name}>
-                <td style={{fontWeight:'600',whiteSpace:'nowrap'}}>{char.name}</td>
-                <td style={{textAlign:'center'}}>
-                  <span style={{background:RACE_COLORS[char.race]||'#F5F5F5',padding:'2px 8px',borderRadius:'10px',fontSize:'11px'}}>{char.race}</span>
-                </td>
-                <td style={{textAlign:'center',fontSize:'12px'}}>{char.personality}</td>
-                <td style={{textAlign:'center',fontSize:'12px'}}>{char.faction}</td>
-                <td style={{textAlign:'center',fontSize:'12px'}}>{char.age}</td>
-                <td style={{textAlign:'center',fontSize:'12px'}}>{char.job}</td>
-                <td style={{fontSize:'11px',color:'#2563EB',maxWidth:'130px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={char.textLink}>{char.textLink}</td>
-                <td>
-                  <RelTags char={char} allChars={allChars} setChars={setCharacters}
-                    addingRel={addingRel} setAddingRel={setAddingRel}/>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-
-  function RelationIndex() {
-    return (
-      <div className="scroll-x">
-        <table>
-          <thead>
-            <tr><th>名字</th><th>來源</th>{[1,2,3,4,5,6].map(n=><th key={n}>關聯角色{n}</th>)}</tr>
-          </thead>
-          <tbody>
-            {allChars.map(char=>(
-              <tr key={char.name}>
-                <td style={{fontWeight:'600',whiteSpace:'nowrap'}}>{char.name}</td>
-                <td style={{textAlign:'center'}}>
-                  <span className={char.source==='recruitable'?'badge-r':'badge-nr'}
-                    style={{padding:'2px 8px',borderRadius:'12px',fontWeight:'bold',fontSize:'11px'}}>
-                    {label(char)}
-                  </span>
-                </td>
-                {[0,1,2,3,4,5].map(idx=>(
-                  <td key={idx} style={{textAlign:'center',color:(char.relations||[])[idx]?'#1F4E79':'#BFBFBF',fontSize:'12px'}}>
-                    {(char.relations||[])[idx]||'—'}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-
-  function CharIndex() {
-    return (
-      <div>
-        {Object.entries(charIndexGroups).map(([race,chars])=>(
-          <div key={race} style={{marginBottom:'16px',borderRadius:'6px',overflow:'hidden',border:'1px solid #D1D9E6'}}>
-            <div className="group-hdr" style={{background:RACE_COLORS[race]||'#F5F5F5'}}>
-              ▌ {race}
-              <span style={{color:'#6B7280',fontWeight:'normal',fontSize:'11px'}}>（{chars.length} 人）</span>
-            </div>
-            <div className="scroll-x">
-              <table style={{minWidth:'500px'}}>
-                <thead><tr style={{background:'#2E75B6'}}>{['名字','派系','年齡','職業（棋種）','招募狀態'].map(h=><th key={h}>{h}</th>)}</tr></thead>
-                <tbody>
-                  {chars.map(char=>(
-                    <tr key={char.name}>
-                      <td style={{fontWeight:'600'}}>{char.name}</td>
-                      <td style={{textAlign:'center',fontSize:'12px'}}>{char.faction}</td>
-                      <td style={{textAlign:'center',fontSize:'12px'}}>{char.age}</td>
-                      <td style={{textAlign:'center',fontSize:'12px'}}>{char.job}</td>
-                      <td style={{textAlign:'center'}}>
-                        <span className={char.source==='recruitable'?'badge-r':'badge-nr'}
-                          style={{padding:'2px 8px',borderRadius:'12px',fontWeight:'bold',fontSize:'11px'}}>
-                          {label(char)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (characters === null) {
-    return (
-      <div className="loading-screen">
-        <div className="spinner"/>
-        <div style={{fontSize:'15px',fontWeight:'bold'}}>連接雲端資料庫中…</div>
-        <div style={{fontSize:'12px',color:'#6B7280'}}>首次載入需要幾秒鐘</div>
-      </div>
-    );
-  }
-
-  const TABS   = ['可招募角色','不可招募角色','關聯角色索引','角色索引清單'];
-  const COUNTS = [rec.length, nrec.length, allChars.length, allChars.length];
-
-  return (
-    <div style={{minHeight:'100vh',background:'#F0F4FB'}}>
-      {showAddModal && <AddCharModal allChars={allChars} setChars={setCharacters} onClose={()=>setShowAddModal(false)}/>}
-
-      <div style={{background:'linear-gradient(135deg,#1F4E79,#2E75B6)',color:'white',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'10px'}}>
-        <div>
-          <div style={{fontSize:'18px',fontWeight:'bold'}}>🎮 遊戲角色管理系統</div>
-          <div style={{fontSize:'12px',opacity:0.8,marginTop:'3px',display:'flex',alignItems:'center',gap:'6px'}}>
-            <span className={`sync-dot ${connected?'sync-on':'sync-off'}`}/>
-            {connected?'已連接雲端・所有裝置即時同步':'連線中斷，請重新整理'}
-            <span style={{opacity:0.6}}>· 共 {allChars.length} 位角色</span>
-          </div>
-        </div>
-        <button className="new-char-btn" onClick={()=>setShowAddModal(true)}>＋ 新增角色</button>
-      </div>
-
-      <div style={{background:'white',borderBottom:'2px solid #E5E7EB',display:'flex',overflowX:'auto'}}>
-        {TABS.map((label,i)=>(
-          <button key={i} className={`tab-btn ${tab===i?'active':''}`} onClick={()=>setTab(i)}>
-            {label}
-            <span style={{marginLeft:'5px',fontSize:'11px',background:tab===i?'#1F4E79':'#E5E7EB',color:tab===i?'white':'#6B7280',borderRadius:'10px',padding:'1px 7px'}}>
-              {COUNTS[i]}
-            </span>
-          </button>
-        ))}
-      </div>
-
-      {(tab===0||tab===1)&&(
-        <div className="hint-bar">
-          <span>💡</span>
-          <span>點 <strong>＋</strong> 新增關聯，支援中文搜尋，可招募和不可招募角色都會顯示。點 <strong>×</strong> 刪除關聯。所有操作即時反映並同步至雲端。</span>
-        </div>
-      )}
-
-      <div style={{padding:'16px'}}>
-        {tab===0&&<DataTable chars={rec}/>}
-        {tab===1&&<DataTable chars={nrec}/>}
-        {tab===2&&<RelationIndex/>}
-        {tab===3&&<CharIndex/>}
+// ── Add modal ────────────────────────────────────────────────────
+function AddCharModal({allChars,setChars,onClose}){
+  const[form,setForm]=useState({name:'',race:'人類',personality:'',faction:'教會',age:'',job:'騎士',textLink:'',source:'recruitable'});
+  const[err,setErr]=useState('');
+  const submit=()=>{
+    const name=form.name.trim();
+    if(!name){setErr('請輸入角色名稱');return;}
+    if(allChars.some(c=>c.name===name)){setErr('此角色名稱已存在');return;}
+    fsAddChar({...form,name,relations:[]},setChars);
+    onClose();
+  };
+  return(<div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="modal">
+      <h2>✨ 新增角色</h2>
+      <div className="fg"><label>角色名稱 <span className="required">*</span></label><input value={form.name} onChange={e=>{setForm(f=>({...f,name:e.target.value}));setErr('');}} placeholder="輸入角色名稱" autoFocus/>{err&&<div className="err">{err}</div>}</div>
+      <div className="fg"><label>招募狀態 <span className="required">*</span></label><select value={form.source} onChange={e=>setForm(f=>({...f,source:e.target.value}))}><option value="recruitable">可招募</option><option value="non-recruitable">不可招募</option></select></div>
+      <CharFormFields form={form} onChange={setForm}/>
+      <div style={{marginTop:'20px',display:'flex',gap:'10px',justifyContent:'flex-end'}}>
+        <button className="btn-secondary" onClick={onClose}>取消</button>
+        <button className="btn-primary" onClick={submit}>✅ 新增角色</button>
       </div>
     </div>
-  );
+  </div>);
+}
+
+// ── Edit modal ───────────────────────────────────────────────────
+function EditCharModal({char,allChars,setChars,onClose}){
+  const[form,setForm]=useState({name:char.name,race:char.race||'人類',personality:char.personality||'',faction:char.faction||'教會',age:char.age||'',job:char.job||'騎士',textLink:char.textLink||'',source:char.source||'recruitable'});
+  const[err,setErr]=useState('');
+  const nameChanged=form.name.trim()!==char.name;
+  const submit=()=>{
+    const newName=form.name.trim();
+    if(!newName){setErr('角色名稱不能為空');return;}
+    if(nameChanged&&allChars.some(c=>c.name===newName)){setErr('此名稱已有其他角色使用');return;}
+    const{name,...updates}=form;
+    fsUpdateChar(char.name,newName,{...updates,name:newName},setChars);
+    onClose();
+  };
+  return(<div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="modal">
+      <h2>✏️ 編輯角色</h2>
+      <div className="fg">
+        <label>角色名稱 <span className="required">*</span></label>
+        <input value={form.name} onChange={e=>{setForm(f=>({...f,name:e.target.value}));setErr('');}}/>
+        {nameChanged&&<div className="warn-box">⚠️ 更改名稱後，所有關聯此角色的關係也會自動同步更新。</div>}
+        {err&&<div className="err">{err}</div>}
+      </div>
+      <div className="fg"><label>招募狀態</label><select value={form.source} onChange={e=>setForm(f=>({...f,source:e.target.value}))}><option value="recruitable">可招募</option><option value="non-recruitable">不可招募</option></select></div>
+      <CharFormFields form={form} onChange={setForm}/>
+      <div style={{marginTop:'20px',display:'flex',gap:'10px',justifyContent:'flex-end'}}>
+        <button className="btn-secondary" onClick={onClose}>取消</button>
+        <button className="btn-primary" onClick={submit}>💾 儲存變更</button>
+      </div>
+    </div>
+  </div>);
+}
+
+// ── Delete confirm modal ─────────────────────────────────────────
+function DeleteConfirmModal({char,setChars,onClose}){
+  return(<div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="modal" style={{maxWidth:'380px'}}>
+      <h2>🗑️ 確認刪除</h2>
+      <p style={{fontSize:'14px',color:'#374151',lineHeight:'1.6',margin:'12px 0 20px'}}>
+        確定要刪除角色 <strong style={{color:'#DC2626'}}>「{char.name}」</strong> 嗎？<br/>
+        <span style={{fontSize:'12px',color:'#6B7280'}}>此角色的所有關聯資料也會一併移除，此操作無法復原。</span>
+      </p>
+      <div style={{display:'flex',gap:'10px',justifyContent:'flex-end'}}>
+        <button className="btn-secondary" onClick={onClose}>取消</button>
+        <button className="btn-danger" onClick={()=>{fsDeleteChar(char.name,setChars);onClose();}}>確認刪除</button>
+      </div>
+    </div>
+  </div>);
+}
+
+// ── RelTags ──────────────────────────────────────────────────────
+function RelTags({char,allChars,setChars,addingRel,setAddingRel}){
+  const[search,setSearch]=useState('');
+  const[composing,setComposing]=useState(false);
+  const inputRef=useRef(null);
+  const wrapRef=useRef(null);
+  const isOpen=addingRel===char.name;
+  useEffect(()=>{if(isOpen&&inputRef.current)inputRef.current.focus();},[isOpen]);
+  useEffect(()=>{if(!isOpen)setSearch('');},[isOpen]);
+  useEffect(()=>{
+    const h=e=>{if(isOpen&&wrapRef.current&&!wrapRef.current.contains(e.target))setAddingRel(null);};
+    document.addEventListener('mousedown',h);return()=>document.removeEventListener('mousedown',h);
+  },[isOpen]);
+  const suggestions=useMemo(()=>{
+    const ex=char.relations||[];
+    return allChars.filter(c=>c.name!==char.name&&!ex.includes(c.name)).filter(c=>!search||c.name.includes(search)).sort((a,b)=>a.source==='recruitable'&&b.source!=='recruitable'?-1:a.source!=='recruitable'&&b.source==='recruitable'?1:a.name.localeCompare(b.name,'zh'));
+  },[char,allChars,search]);
+  const handleAdd=r=>{setAddingRel(null);fsUpdateRelations(char.name,r,'add',setChars);};
+  const handleRemove=r=>fsUpdateRelations(char.name,r,'remove',setChars);
+  return(<div className="rel-wrap" ref={isOpen?wrapRef:null}>
+    {(char.relations||[]).map(r=><span key={r} className="tag">{r}<button className="tag-del" onClick={()=>handleRemove(r)}>×</button></span>)}
+    {isOpen?(<div style={{position:'relative'}}>
+      <input ref={inputRef} className="rel-input" value={search} onChange={e=>setSearch(e.target.value)}
+        onCompositionStart={()=>setComposing(true)} onCompositionEnd={e=>{setComposing(false);setSearch(e.target.value);}}
+        onKeyDown={e=>{if(e.key==='Escape')setAddingRel(null);if(e.key==='Enter'&&!composing&&suggestions.length>0)handleAdd(suggestions[0].name);}}
+        placeholder="搜尋角色名稱…"/>
+      <div className="dropdown">
+        {suggestions.length===0?<div className="dd-empty">找不到符合的角色</div>:suggestions.map(s=>(
+          <div key={s.name} className="dd-item" onMouseDown={e=>{e.preventDefault();handleAdd(s.name);}}>
+            <span>{s.name}</span><span className={s.source==='recruitable'?'badge-r':'badge-nr'}>{s.source==='recruitable'?'可招募':'不可招募'}</span>
+          </div>
+        ))}
+      </div>
+    </div>):(<button className="add-btn" onClick={()=>setAddingRel(char.name)}>＋</button>)}
+  </div>);
+}
+
+// ── Network Graph ────────────────────────────────────────────────
+function NetworkGraph({allChars}){
+  const[positions,setPositions]=useState({});
+  const[filterText,setFilterText]=useState('');
+  const[hovered,setHovered]=useState(null);
+  const[transform,setTransform]=useState({x:0,y:0,scale:1});
+  const isDragging=useRef(false);
+  const dragStart=useRef({x:0,y:0,tx:0,ty:0});
+  const containerRef=useRef(null);
+  const W=1000,H=680;
+
+  const edges=useMemo(()=>{
+    const seen=new Set(),res=[];
+    allChars.forEach(c=>(c.relations||[]).forEach(r=>{const k=[c.name,r].sort().join('|||');if(!seen.has(k)){seen.add(k);res.push([c.name,r]);}}));
+    return res;
+  },[allChars]);
+
+  const dataKey=useMemo(()=>allChars.map(c=>c.name).sort().join(',')+'/'+edges.map(e=>e.join('-')).join(','),[allChars,edges]);
+
+  useEffect(()=>{
+    if(!allChars.length)return;
+    const pos=computeLayout(allChars.map(c=>c.name),edges,W,H);
+    setPositions(pos);
+  },[dataKey]);
+
+  // Active nodes for filter/hover
+  const activeSet=useMemo(()=>{
+    const src=filterText||hovered;
+    if(!src)return null;
+    const match=allChars.filter(c=>c.name.includes(src)).map(c=>c.name);
+    const s=new Set(match);
+    match.forEach(n=>{const c=allChars.find(x=>x.name===n);(c?.relations||[]).forEach(r=>s.add(r));});
+    return s;
+  },[filterText,hovered,allChars]);
+
+  // Wheel zoom toward cursor
+  useEffect(()=>{
+    const el=containerRef.current;
+    if(!el)return;
+    const handler=e=>{
+      e.preventDefault();
+      const rect=el.getBoundingClientRect();
+      const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+      const delta=e.deltaY>0?0.87:1.15;
+      setTransform(t=>{
+        const ns=Math.max(0.2,Math.min(5,t.scale*delta));
+        const sf=ns/t.scale;
+        return{x:mx-sf*(mx-t.x),y:my-sf*(my-t.y),scale:ns};
+      });
+    };
+    el.addEventListener('wheel',handler,{passive:false});
+    return()=>el.removeEventListener('wheel',handler);
+  },[]);
+
+  const onMouseDown=e=>{
+    if(e.button!==0)return;
+    if(e.target.closest('.node-g'))return;
+    isDragging.current=true;
+    dragStart.current={x:e.clientX-transform.x,y:e.clientY-transform.y};
+  };
+  const onMouseMove=e=>{if(!isDragging.current)return;setTransform(t=>({...t,x:e.clientX-dragStart.current.x,y:e.clientY-dragStart.current.y}));};
+  const onMouseUp=()=>{isDragging.current=false;};
+
+  const NR=20;
+  const shortName=n=>n.length>5?n.slice(0,4)+'…':n;
+
+  return(<div className="net-container">
+    <div className="net-toolbar">
+      <span style={{fontSize:'13px',fontWeight:'bold',color:'#1F4E79'}}>🕸️ 關係網絡圖</span>
+      <span style={{fontSize:'12px',color:'#6B7280'}}>{allChars.length} 位角色・{edges.length} 條關聯</span>
+      <input className="net-search" value={filterText} onChange={e=>setFilterText(e.target.value)}
+        placeholder="🔍 搜尋角色名稱，高亮顯示關係"/>
+      <button className="btn-secondary" style={{padding:'6px 12px',fontSize:'12px'}} onClick={()=>{setTransform({x:0,y:0,scale:1});setFilterText('');}}>重置視角</button>
+      <div style={{display:'flex',gap:'14px',fontSize:'11px',marginLeft:'auto',alignItems:'center'}}>
+        <span><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#2563EB',marginRight:4,verticalAlign:'middle'}}/>可招募</span>
+        <span><span style={{display:'inline-block',width:10,height:10,borderRadius:'50%',background:'#C2410C',marginRight:4,verticalAlign:'middle'}}/>不可招募</span>
+      </div>
+    </div>
+    <div ref={containerRef} className={`net-svg-wrap${isDragging.current?' dragging':''}`}
+      onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}>
+      <svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} style={{display:'block'}}>
+        <g transform={`translate(${transform.x},${transform.y}) scale(${transform.scale})`}>
+          {/* Edges */}
+          {edges.map(([a,b])=>{
+            if(!positions[a]||!positions[b])return null;
+            const active=!activeSet||(activeSet.has(a)&&activeSet.has(b));
+            return<line key={`${a}-${b}`} x1={positions[a].x} y1={positions[a].y} x2={positions[b].x} y2={positions[b].y}
+              stroke={active?'#64748B':'#CBD5E1'} strokeWidth={active?1.8:1} opacity={active?0.7:0.12}/>;
+          })}
+          {/* Nodes */}
+          {allChars.map(char=>{
+            const p=positions[char.name];
+            if(!p)return null;
+            const isRec=char.source==='recruitable';
+            const isHov=hovered===char.name;
+            const inActive=!activeSet||activeSet.has(char.name);
+            const fill=isRec?'#2563EB':'#C2410C';
+            const hl=isHov||(activeSet&&activeSet.has(char.name)&&filterText);
+            return(<g key={char.name} className="node-g" transform={`translate(${p.x},${p.y})`}
+              style={{cursor:'default'}}
+              onMouseEnter={()=>setHovered(char.name)} onMouseLeave={()=>setHovered(null)}>
+              {hl&&<circle r={NR+6} fill="none" stroke="#FBBF24" strokeWidth="3" opacity="0.8"/>}
+              <circle r={isHov?NR+3:NR} fill={fill} stroke="white" strokeWidth="2"
+                opacity={inActive?1:0.12} style={{transition:'r 0.1s'}}/>
+              <text textAnchor="middle" dominantBaseline="middle" fontSize="8.5"
+                fill="white" fontWeight="bold" opacity={inActive?1:0.12} style={{pointerEvents:'none'}}>
+                {shortName(char.name)}
+              </text>
+              <text textAnchor="middle" y={NR+13} fontSize="10" fill={inActive?'#1E3A5F':'#CBD5E1'}
+                fontWeight={isHov?'bold':'normal'} style={{pointerEvents:'none'}}>
+                {isHov&&char.name.length>5?char.name:shortName(char.name)}
+              </text>
+              {isHov&&char.name.length>5&&(
+                <text textAnchor="middle" y={NR+25} fontSize="9" fill="#475569" style={{pointerEvents:'none'}}>
+                  {char.name.slice(4)}
+                </text>
+              )}
+            </g>);
+          })}
+        </g>
+      </svg>
+      <div className="net-hint">滾輪縮放・拖曳移動</div>
+    </div>
+  </div>);
+}
+
+// ── Main App ─────────────────────────────────────────────────────
+function App(){
+  const[characters,setCharacters]=useState(null);
+  const[connected,setConnected]=useState(false);
+  const[tab,setTab]=useState(0);
+  const[addingRel,setAddingRel]=useState(null);
+  const[showAdd,setShowAdd]=useState(false);
+  const[editChar,setEditChar]=useState(null);
+  const[deleteChar,setDeleteChar]=useState(null);
+
+  useEffect(()=>{
+    seedIfEmpty().catch(console.error);
+    return db.collection('characters').onSnapshot(
+      s=>{setCharacters(s.docs.map(d=>d.data()));setConnected(true);},
+      e=>{console.error(e);setConnected(false);}
+    );
+  },[]);
+
+  const allChars=useMemo(()=>characters||[],[characters]);
+  const rec=useMemo(()=>allChars.filter(c=>c.source==='recruitable'),[allChars]);
+  const nrec=useMemo(()=>allChars.filter(c=>c.source==='non-recruitable'),[allChars]);
+  const lbl=c=>c.source==='recruitable'?'可招募':'不可招募';
+
+  function DataTable({chars}){
+    return(<div className="scroll-x"><table>
+      <thead><tr>{['名字','種族','個性','派系','年齡','職業','文本連結','關聯角色','操作'].map(h=><th key={h}>{h}</th>)}</tr></thead>
+      <tbody>{chars.map(char=>(
+        <tr key={char.name}>
+          <td style={{fontWeight:'600',whiteSpace:'nowrap'}}>{char.name}</td>
+          <td style={{textAlign:'center'}}><span style={{background:RACE_COLORS[char.race]||'#F5F5F5',padding:'2px 8px',borderRadius:'10px',fontSize:'11px'}}>{char.race}</span></td>
+          <td style={{textAlign:'center',fontSize:'12px'}}>{char.personality}</td>
+          <td style={{textAlign:'center',fontSize:'12px'}}>{char.faction}</td>
+          <td style={{textAlign:'center',fontSize:'12px'}}>{char.age}</td>
+          <td style={{textAlign:'center',fontSize:'12px'}}>{char.job}</td>
+          <td style={{fontSize:'11px',color:'#2563EB',maxWidth:'120px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={char.textLink}>{char.textLink}</td>
+          <td><RelTags char={char} allChars={allChars} setChars={setCharacters} addingRel={addingRel} setAddingRel={setAddingRel}/></td>
+          <td style={{textAlign:'center',whiteSpace:'nowrap'}}>
+            <button className="icon-btn edit" title="編輯" onClick={()=>setEditChar(char)}>✏️</button>
+            <button className="icon-btn del" title="刪除" onClick={()=>setDeleteChar(char)}>🗑️</button>
+          </td>
+        </tr>
+      ))}</tbody>
+    </table></div>);
+  }
+
+  function RelIndex(){
+    return(<div className="scroll-x"><table>
+      <thead><tr><th>名字</th><th>來源</th>{[1,2,3,4,5,6].map(n=><th key={n}>關聯角色{n}</th>)}</tr></thead>
+      <tbody>{allChars.map(char=>(
+        <tr key={char.name}>
+          <td style={{fontWeight:'600',whiteSpace:'nowrap'}}>{char.name}</td>
+          <td style={{textAlign:'center'}}><span className={char.source==='recruitable'?'badge-r':'badge-nr'} style={{padding:'2px 8px',borderRadius:'12px',fontWeight:'bold',fontSize:'11px'}}>{lbl(char)}</span></td>
+          {[0,1,2,3,4,5].map(i=><td key={i} style={{textAlign:'center',color:(char.relations||[])[i]?'#1F4E79':'#BFBFBF',fontSize:'12px'}}>{(char.relations||[])[i]||'—'}</td>)}
+        </tr>
+      ))}</tbody>
+    </table></div>);
+  }
+
+  if(characters===null)return(<div className="loading-screen"><div className="spinner"/><div style={{fontSize:'15px',fontWeight:'bold'}}>連接雲端資料庫中…</div></div>);
+
+  const TABS=['可招募角色','不可招募角色','關聯角色索引','關係網絡圖'];
+  const COUNTS=[rec.length,nrec.length,allChars.length,allChars.length];
+
+  return(<div style={{minHeight:'100vh',background:'#F0F4FB'}}>
+    {showAdd&&<AddCharModal allChars={allChars} setChars={setCharacters} onClose={()=>setShowAdd(false)}/>}
+    {editChar&&<EditCharModal char={editChar} allChars={allChars} setChars={setCharacters} onClose={()=>setEditChar(null)}/>}
+    {deleteChar&&<DeleteConfirmModal char={deleteChar} setChars={setCharacters} onClose={()=>setDeleteChar(null)}/>}
+
+    <div style={{background:'linear-gradient(135deg,#1F4E79,#2E75B6)',color:'white',padding:'14px 20px',display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'10px'}}>
+      <div>
+        <div style={{fontSize:'18px',fontWeight:'bold'}}>🎮 遊戲角色管理系統</div>
+        <div style={{fontSize:'12px',opacity:0.8,marginTop:'3px',display:'flex',alignItems:'center',gap:'6px'}}>
+          <span className={`sync-dot ${connected?'sync-on':'sync-off'}`}/>
+          {connected?'已連接雲端・即時同步':'連線中斷，請重新整理'}
+          <span style={{opacity:0.6}}>· 共 {allChars.length} 位角色</span>
+        </div>
+      </div>
+      <button className="new-char-btn" onClick={()=>setShowAdd(true)}>＋ 新增角色</button>
+    </div>
+
+    <div style={{background:'white',borderBottom:'2px solid #E5E7EB',display:'flex',overflowX:'auto'}}>
+      {TABS.map((label,i)=>(
+        <button key={i} className={`tab-btn ${tab===i?'active':''}`} onClick={()=>setTab(i)}>
+          {label}<span style={{marginLeft:'5px',fontSize:'11px',background:tab===i?'#1F4E79':'#E5E7EB',color:tab===i?'white':'#6B7280',borderRadius:'10px',padding:'1px 7px'}}>{COUNTS[i]}</span>
+        </button>
+      ))}
+    </div>
+
+    {(tab===0||tab===1)&&<div className="hint-bar"><span>💡</span><span>點 <strong>✏️</strong> 編輯角色資料，點 <strong>🗑️</strong> 刪除（刪除前會再次確認）。關聯欄點 <strong>＋</strong> 新增、<strong>×</strong> 刪除，支援中文搜尋，雙向自動同步。</span></div>}
+
+    <div style={{padding:'16px'}}>
+      {tab===0&&<DataTable chars={rec}/>}
+      {tab===1&&<DataTable chars={nrec}/>}
+      {tab===2&&<RelIndex/>}
+      {tab===3&&<NetworkGraph allChars={allChars}/>}
+    </div>
+  </div>);
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
